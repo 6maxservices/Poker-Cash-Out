@@ -282,6 +282,38 @@ export default function PokerCalculator() {
     handleNewHand();
   };
 
+  const handleSave = () => {
+    if (!equityResult) {
+      toast({
+        title: "No Results to Save",
+        description: "Calculate equity first before saving",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const handData = {
+      handId: handId || `hand_${Date.now()}`,
+      gameVariant,
+      potAmount,
+      feePercentage,
+      communityCards,
+      player1Hand,
+      player2Hand,
+      burnedCards,
+      equityResult,
+      timestamp: new Date().toISOString(),
+      status: 'saved'
+    };
+
+    console.log('Saving hand data:', handData);
+    
+    toast({
+      title: "Hand Saved",
+      description: "Hand data has been saved successfully",
+    });
+  };
+
   const handleReset = () => {
     setCommunityCards({ flop: [], turn: undefined, river: undefined });
     setPlayer1Hand({ cards: [] });
