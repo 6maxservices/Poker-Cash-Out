@@ -78,12 +78,19 @@ function completeBoard(communityCards: CommunityCards, deck: Card[]): Card[] {
   const board: Card[] = [...communityCards.flop];
   let deckIndex = 0;
 
+  // Fill flop to 3 cards if needed
+  while (board.length < 3) {
+    board.push(deck[deckIndex++]);
+  }
+
+  // Add turn
   if (communityCards.turn) {
     board.push(communityCards.turn);
   } else {
     board.push(deck[deckIndex++]);
   }
 
+  // Add river
   if (communityCards.river) {
     board.push(communityCards.river);
   } else {

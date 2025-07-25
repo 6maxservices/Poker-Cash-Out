@@ -59,9 +59,8 @@ export default function PokerCalculator() {
   const canCalculate = useCallback((): boolean => {
     const minCardsPerPlayer = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
     return player1Hand.cards.length >= minCardsPerPlayer && 
-           player2Hand.cards.length >= minCardsPerPlayer &&
-           communityCards.flop.length > 0;
-  }, [gameVariant, player1Hand.cards.length, player2Hand.cards.length, communityCards.flop.length]);
+           player2Hand.cards.length >= minCardsPerPlayer;
+  }, [gameVariant, player1Hand.cards.length, player2Hand.cards.length]);
 
   const handleCalculateEquity = useCallback(() => {
     if (!canCalculate()) {

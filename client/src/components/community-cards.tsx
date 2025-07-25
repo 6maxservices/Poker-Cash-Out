@@ -78,7 +78,7 @@ export function CommunityCards({
     <div className="bg-black bg-opacity-60 rounded-xl p-6 mb-8 backdrop-blur-sm border border-yellow-500 border-opacity-30">
       <h2 className="text-xl font-bold text-white mb-4 text-center">
         <span className="text-yellow-500 mr-2">🃏</span>
-        Community Cards
+        Community Cards <span className="text-sm text-gray-400 font-normal">(Optional for Preflop)</span>
       </h2>
       
       <div className="flex justify-center gap-3 mb-6">
