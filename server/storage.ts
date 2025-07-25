@@ -46,12 +46,14 @@ export class DatabaseStorage implements IStorage {
         player1Hand: calc.player1Hand as any,
         player2Hand: calc.player2Hand as any,
         potAmount: calc.potAmount,
+        burnedCards: [], // Not stored in database currently
       },
       result: {
         player1Equity: calc.player1Equity,
         player2Equity: calc.player2Equity,
         player1MoneyEquity: calc.player1MoneyEquity,
         player2MoneyEquity: calc.player2MoneyEquity,
+        tiePercentage: 0, // Not stored in database currently
         iterations: calc.iterations,
         calculationTime: calc.calculationTime,
       },
