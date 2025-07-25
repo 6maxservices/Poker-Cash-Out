@@ -10,6 +10,7 @@ interface PlayerHandProps {
   cards: Card[];
   equity: number;
   moneyEquity: number;
+  feePercentage: number;
   gameVariant: GameVariant;
   onCardSelect: (card: Card) => void;
   onCardDeselect: (index: number) => void;
@@ -21,6 +22,7 @@ export function PlayerHand({
   cards,
   equity,
   moneyEquity,
+  feePercentage,
   gameVariant,
   onCardSelect,
   onCardDeselect,
@@ -29,6 +31,10 @@ export function PlayerHand({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
   const potOdds = calculatePotOdds(equity);
+  
+  // Calculate net payout after fees
+  const feeAmount = moneyEquity * (feePercentage / 100);
+  const netPayout = moneyEquity - feeAmount;
   
   const handleCardSelect = (card: Card) => {
     onCardSelect(card);
@@ -107,9 +113,16 @@ export function PlayerHand({
           </div>
           <div className="text-sm text-white mb-1">Equity</div>
           <div className="text-lg font-bold text-yellow-500">
-            {formatCurrency(moneyEquity)}
+            {formatCurrency(netPayout)}
           </div>
-          <div className="text-xs text-gray-300">Expected Value</div>
+          <div className="text-xs text-gray-300">
+            Net Payout ({feePercentage}% fee)
+          </div>
+          {feeAmount > 0 && (
+            <div className="text-xs text-red-400 mt-1">
+              Fee: -{formatCurrency(feeAmount)}
+            </div>
+          )}
         </div>
       </div>
 

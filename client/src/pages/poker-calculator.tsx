@@ -17,6 +17,7 @@ import { Spade, Heart, Calculator, DollarSign, Edit } from "lucide-react";
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
   const [potAmount, setPotAmount] = useState<number>(100);
+  const [feePercentage, setFeePercentage] = useState<number>(5);
   const [communityCards, setCommunityCards] = useState<CommunityCards>({
     flop: [],
     turn: undefined,
@@ -229,18 +230,36 @@ export default function PokerCalculator() {
 
       {/* Game Settings */}
       <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-        <div className="flex items-center justify-center gap-3">
-          <Label className="text-white font-semibold text-sm">Game Variant:</Label>
-          <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-            <SelectTrigger className="w-48 bg-black text-white border-yellow-500">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="nlh">No Limit Hold'em</SelectItem>
-              <SelectItem value="plo4">PLO4 (4-card Omaha)</SelectItem>
-              <SelectItem value="plo5">PLO5 (5-card Omaha)</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-white font-semibold text-sm">Game Variant:</Label>
+            <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
+              <SelectTrigger className="w-48 bg-black text-white border-yellow-500">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nlh">No Limit Hold'em</SelectItem>
+                <SelectItem value="plo4">PLO4 (4-card Omaha)</SelectItem>
+                <SelectItem value="plo5">PLO5 (5-card Omaha)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Label className="text-white font-semibold text-sm">Service Fee:</Label>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                value={feePercentage}
+                onChange={(e) => setFeePercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                min="0"
+                max="100"
+                step="0.1"
+                className="w-20 bg-black text-white border-yellow-500 text-center"
+              />
+              <span className="text-white font-semibold text-sm">%</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -251,6 +270,7 @@ export default function PokerCalculator() {
           cards={player1Hand.cards}
           equity={equityResult?.player1Equity || 0}
           moneyEquity={equityResult?.player1MoneyEquity || 0}
+          feePercentage={feePercentage}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer1CardSelect}
           onCardDeselect={handlePlayer1CardDeselect}
@@ -262,6 +282,7 @@ export default function PokerCalculator() {
           cards={player2Hand.cards}
           equity={equityResult?.player2Equity || 0}
           moneyEquity={equityResult?.player2MoneyEquity || 0}
+          feePercentage={feePercentage}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer2CardSelect}
           onCardDeselect={handlePlayer2CardDeselect}
