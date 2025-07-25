@@ -285,6 +285,7 @@ export default function PokerCalculator() {
     setPlayer1CashoutStatus(null);
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
+    setPotAmount(100); // Reset pot to default amount
     
     // Trigger reset for player components
     setResetCashoutTrigger(true);
@@ -292,7 +293,7 @@ export default function PokerCalculator() {
     
     toast({
       title: "New Hand Started",
-      description: "Ready to deal a new hand",
+      description: "Ready to deal a new hand with fresh pot",
     });
   };
 

@@ -204,14 +204,40 @@ export default function TVDisplay() {
       setGameData(data);
     };
     
-    // Subscribe with error handling
+    // Subscribe with error handling and retry logic
     let unsubscribe: (() => void) | null = null;
-    try {
-      console.log('TV Display: Attempting to subscribe...');
-      unsubscribe = tvBroadcaster.subscribe(handleUpdate);
-      console.log('TV Display: Successfully subscribed, unsubscribe function:', typeof unsubscribe);
-    } catch (error) {
-      console.error('TV Display: Failed to subscribe:', error);
+    let subscribeAttempts = 0;
+    
+    const attemptSubscribe = () => {
+      subscribeAttempts++;
+      console.log(`TV Display: Attempting to subscribe (attempt ${subscribeAttempts})...`);
+      
+      try {
+        unsubscribe = tvBroadcaster.subscribe(handleUpdate);
+        console.log('TV Display: Successfully subscribed, unsubscribe function:', typeof unsubscribe);
+        
+        // Force a check of listener count by calling a test method if available
+        if ((tvBroadcaster as any).getListenerCount) {
+          console.log('TV Display: Current listener count:', (tvBroadcaster as any).getListenerCount());
+        }
+        
+        return true;
+      } catch (error) {
+        console.error(`TV Display: Failed to subscribe (attempt ${subscribeAttempts}):`, error);
+        return false;
+      }
+    };
+    
+    // Try subscribing immediately
+    if (!attemptSubscribe()) {
+      // If first attempt fails, try again after a short delay
+      const retryTimeout = setTimeout(() => {
+        console.log('TV Display: Retrying subscription...');
+        attemptSubscribe();
+      }, 100);
+      
+      // Clean up retry timeout if component unmounts
+      return () => clearTimeout(retryTimeout);
     }
     
     // Test if there's existing data

@@ -116,6 +116,11 @@ export class TVBroadcaster {
       }
     });
   }
+
+  // Debug method to check listener count
+  getListenerCount(): number {
+    return this.listeners.length;
+  }
 }
 
 // Create and export the singleton instance
