@@ -107,3 +107,47 @@
     background-position: 100% 50%; 
   }
 }
+
+@keyframes cashout-celebration {
+  0% { 
+    transform: scale(0.8) rotate(-10deg); 
+    opacity: 0; 
+  }
+  50% { 
+    transform: scale(1.2) rotate(5deg); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
+}
+
+@keyframes trophy-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes golden-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(255, 193, 7, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 40px rgba(255, 193, 7, 1)) drop-shadow(0 0 60px rgba(255, 193, 7, 0.6));
+  }
+}
+
+.cashout-animation {
+  animation: cashout-celebration 0.8s ease-out;
+}
+
+.trophy-bounce {
+  animation: trophy-bounce 2s infinite, golden-glow 2s infinite;
+}

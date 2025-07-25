@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { tvBroadcaster } from "@/lib/tv-broadcaster";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, Calculator, DollarSign, Edit, Plus, Check } from "lucide-react";
+import { Spade, Heart, Calculator, DollarSign, Edit, Plus, Check, Tv } from "lucide-react";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -35,6 +36,40 @@ export default function PokerCalculator() {
   const [resetCashoutTrigger, setResetCashoutTrigger] = useState(false);
 
   const { toast } = useToast();
+
+  // Broadcast data to TV display
+  const broadcastToTV = useCallback(() => {
+    const player1MoneyEquity = equityResult?.player1MoneyEquity || 0;
+    const player2MoneyEquity = equityResult?.player2MoneyEquity || 0;
+    
+    tvBroadcaster.broadcast({
+      gameVariant,
+      potAmount,
+      player1Cards: player1Hand.cards,
+      player2Cards: player2Hand.cards,
+      player1Equity: equityResult?.player1Equity || 0,
+      player2Equity: equityResult?.player2Equity || 0,
+      player1CashoutAmount: player1MoneyEquity - (player1MoneyEquity * (feePercentage / 100)),
+      player2CashoutAmount: player2MoneyEquity - (player2MoneyEquity * (feePercentage / 100)),
+      player1CashoutStatus,
+      player2CashoutStatus,
+      timestamp: Date.now(),
+    });
+  }, [
+    gameVariant, 
+    potAmount, 
+    player1Hand.cards, 
+    player2Hand.cards, 
+    equityResult, 
+    feePercentage,
+    player1CashoutStatus, 
+    player2CashoutStatus
+  ]);
+
+  // Auto-broadcast when key data changes
+  useEffect(() => {
+    broadcastToTV();
+  }, [broadcastToTV]);
 
   const formatPotAmount = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -338,6 +373,16 @@ export default function PokerCalculator() {
           <Heart className="inline text-red-500 ml-2" size={24} />
         </h1>
         <p className="text-gray-300 text-sm">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
+        <div className="mt-3">
+          <Button
+            onClick={() => window.open('/tv', '_blank')}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2"
+            size="sm"
+          >
+            <Tv className="mr-2 h-4 w-4" />
+            Open TV Display
+          </Button>
+        </div>
       </div>
 
       {/* Pot Amount - Prominent Display */}
