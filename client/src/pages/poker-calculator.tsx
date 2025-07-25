@@ -37,27 +37,28 @@ export default function PokerCalculator() {
 
   const { toast } = useToast();
 
-  const [tvAccessCode, setTvAccessCode] = useState(generateAccessCode());
-  const [tvConnectedClients, setTvConnectedClients] = useState(0);
+  const [tvAccessCode, setTvAccessCode] = useState<string>("");
+  const [tvConnectedClients, setTvConnectedClients] = useState<number>(0);
 
   useEffect(() => {
-    // In a real implementation, you'd connect to a server-sent events endpoint
-    // and listen for updates to the number of connected clients.
-    // This is a placeholder.
-    // Example:
-    // const eventSource = new EventSource('/api/tv-connections');
-    // eventSource.onmessage = (event) => {
-    //   setTvConnectedClients(parseInt(event.data));
-    // };
-    // return () => eventSource.close();
+    // Fetch initial access code from server
+    fetch('/api/tv/access-code')
+      .then(res => res.json())
+      .then(data => {
+        setTvAccessCode(data.accessCode);
+        setTvConnectedClients(data.connectedClients);
+      })
+      .catch(error => console.error('Failed to fetch TV access code:', error));
   }, []);
 
-  function generateAccessCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
-
-  const regenerateTvCode = () => {
-    setTvAccessCode(generateAccessCode());
+  const regenerateTvCode = async () => {
+    try {
+      const response = await fetch('/api/tv/regenerate-code', { method: 'POST' });
+      const data = await response.json();
+      setTvAccessCode(data.accessCode);
+    } catch (error) {
+      console.error('Failed to regenerate TV access code:', error);
+    }
   };
 
   const formatPotAmount = (amount: number): string => {
