@@ -32,6 +32,14 @@ export function calculateEquity(
   burnedCards.forEach(card => knownCards.add(cardToString(card)));
 
   const availableDeck = createDeck().filter(card => !knownCards.has(cardToString(card)));
+  
+  // Log deck information for verification
+  console.log(`Monte Carlo calculation - Total deck: 52 cards`);
+  console.log(`Known cards (excluded): ${knownCards.size} - Community: ${[...communityCards.flop, communityCards.turn, communityCards.river].filter(Boolean).length}, Player1: ${player1Hand.cards.length}, Player2: ${player2Hand.cards.length}, Burned: ${burnedCards.length}`);
+  console.log(`Available deck size: ${availableDeck.length}`);
+  if (burnedCards.length > 0) {
+    console.log(`Burned cards: ${burnedCards.map(card => `${card.rank}${card.suit}`).join(', ')}`);
+  }
 
   for (let i = 0; i < iterations; i++) {
     // Shuffle available deck
