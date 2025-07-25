@@ -3,7 +3,8 @@ import { Card, GameVariant } from "@shared/schema";
 import { CardSelectorModal } from "./card-selector-modal";
 import { cn } from "@/lib/utils";
 import { isRedSuit, formatCurrency, calculatePotOdds } from "@/lib/poker-utils";
-import { Plus, User } from "lucide-react";
+import { Plus, User, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface PlayerHandProps {
   playerNumber: 1 | 2;
@@ -29,6 +30,7 @@ export function PlayerHand({
   selectedCards
 }: PlayerHandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cashoutStatus, setCashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
   const potOdds = calculatePotOdds(equity);
   
@@ -39,6 +41,24 @@ export function PlayerHand({
   const handleCardSelect = (card: Card) => {
     onCardSelect(card);
     setIsModalOpen(false);
+  };
+
+  const handleApproveCashout = () => {
+    setCashoutStatus('approved');
+    // TODO: Add API call to approve cashout
+    console.log(`Player ${playerNumber} cashout approved: ${formatCurrency(netPayout)}`);
+  };
+
+  const handleRejectCashout = () => {
+    setCashoutStatus('rejected');
+    // TODO: Add API call to reject cashout
+    console.log(`Player ${playerNumber} cashout rejected`);
+  };
+
+  const handleRequestCashout = () => {
+    setCashoutStatus('pending');
+    // TODO: Add API call to request cashout
+    console.log(`Player ${playerNumber} cashout requested: ${formatCurrency(netPayout)}`);
   };
 
   const renderCardSlot = (index: number) => {
@@ -131,6 +151,69 @@ export function PlayerHand({
           <div className="text-xs text-gray-400 mb-1">Pot Odds</div>
           <div className="text-sm font-semibold text-white">{potOdds}</div>
         </div>
+      </div>
+
+      {/* Cashout Controls */}
+      <div className="mt-3 space-y-2">
+        {cashoutStatus === null && netPayout > 0 && (
+          <Button
+            onClick={handleRequestCashout}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2"
+            size="sm"
+          >
+            Request Cashout
+          </Button>
+        )}
+
+        {cashoutStatus === 'pending' && (
+          <div className="space-y-2">
+            <div className="text-center text-orange-400 text-sm font-semibold">
+              Cashout Pending
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={handleApproveCashout}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 text-sm"
+                size="sm"
+              >
+                <Check className="mr-1 h-4 w-4" />
+                Approve
+              </Button>
+              <Button
+                onClick={handleRejectCashout}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 text-sm"
+                size="sm"
+              >
+                <X className="mr-1 h-4 w-4" />
+                Reject
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {cashoutStatus === 'approved' && (
+          <div className="bg-green-600 bg-opacity-20 border border-green-500 rounded-lg p-2 text-center">
+            <div className="text-green-400 font-bold text-sm mb-1">
+              <Check className="inline mr-1 h-4 w-4" />
+              CASHOUT APPROVED
+            </div>
+            <div className="text-white text-xs">
+              Amount: {formatCurrency(netPayout)}
+            </div>
+          </div>
+        )}
+
+        {cashoutStatus === 'rejected' && (
+          <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-2 text-center">
+            <div className="text-red-400 font-bold text-sm mb-1">
+              <X className="inline mr-1 h-4 w-4" />
+              CASHOUT REJECTED
+            </div>
+            <div className="text-white text-xs">
+              Player continues in hand
+            </div>
+          </div>
+        )}
       </div>
 
       <CardSelectorModal
