@@ -33,12 +33,9 @@ function createDeck(excludedCards: Card[]): Card[] {
     )
   );
   
-  // Debug: Verify exclusion worked
+  // Verify deck exclusion worked correctly
   if (excludedCards.length > 0) {
-    console.log(`DEBUG DECK EXCLUSION: Started with ${deck.length} cards, excluded ${excludedCards.length} cards, remaining: ${filteredDeck.length}`);
-    const excludedRanks = excludedCards.map(c => c.rank);
-    const remainingOfSameRank = filteredDeck.filter(c => excludedRanks.includes(c.rank));
-    console.log(`DEBUG: Cards of excluded ranks still in deck: ${remainingOfSameRank.map(c => c.rank + c.suit).join(', ')}`);
+    console.log(`Deck exclusion: ${deck.length} → ${filteredDeck.length} cards (excluded ${excludedCards.length})`);
   }
   
   return filteredDeck;
@@ -200,6 +197,16 @@ export function runMonteCarloSimulation(
   // Create available deck
   const availableDeck = createDeck(knownCards);
   console.log(`Available deck size: ${availableDeck.length}`);
+  
+  // Verify burned cards are properly excluded (production logging)
+  if (burnedCards.length > 0) {
+    const improperlExcluded = burnedCards.filter(burned => 
+      availableDeck.some(card => card.rank === burned.rank && card.suit === burned.suit)
+    );
+    if (improperlExcluded.length > 0) {
+      console.error(`ERROR: Burned cards still in deck: ${improperlExcluded.map(c => c.rank + c.suit).join(', ')}`);
+    }
+  }
   
   if (burnedCards.length > 0) {
     console.log(`Burned cards: ${burnedCards.map(c => c.rank + c.suit).join(', ')}`);

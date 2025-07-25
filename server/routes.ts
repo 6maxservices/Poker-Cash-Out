@@ -20,7 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         calculationData.burnedCards || []
       );
 
-      console.log("EQUITY RESULT DEBUG:", JSON.stringify(result, null, 2));
+      // Result calculated successfully
 
       // Optionally save the calculation
       const calculationId = await storage.saveCalculation(calculationData, result);
