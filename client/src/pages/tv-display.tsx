@@ -194,15 +194,28 @@ export default function TVDisplay() {
   const [prevPlayer1Status, setPrevPlayer1Status] = useState<string | null>(null);
   const [prevPlayer2Status, setPrevPlayer2Status] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
   // Subscribe to real-time updates
   useEffect(() => {
+    console.log('TV Display: Setting up subscription');
     const unsubscribe = tvBroadcaster.subscribe((data: TVBroadcastData) => {
-      console.log('TV Display received update:', data);
+      console.log('TV Display received update:', {
+        timestamp: data.timestamp,
+        isFullscreen: !!document.fullscreenElement,
+        gameVariant: data.gameVariant,
+        potAmount: data.potAmount,
+        player1Status: data.player1CashoutStatus,
+        player2Status: data.player2CashoutStatus
+      });
       setGameData(data);
+      setLastUpdateTime(Date.now());
     });
 
-    return unsubscribe;
+    return () => {
+      console.log('TV Display: Cleaning up subscription');
+      unsubscribe();
+    };
   }, []);
 
   // Listen for fullscreen changes
@@ -358,6 +371,10 @@ export default function TVDisplay() {
       {/* Footer */}
       <div className="text-center mt-8 text-gray-400">
         <p className="text-xl">LIVE EQUITY DISPLAY • REAL-TIME UPDATES</p>
+        <p className="text-sm mt-2 opacity-75">
+          Last Update: {new Date(lastUpdateTime).toLocaleTimeString()} 
+          {isFullscreen ? ' • FULLSCREEN MODE' : ''}
+        </p>
       </div>
     </div>
   );

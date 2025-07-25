@@ -20,6 +20,8 @@ const TV_BROADCAST_KEY = 'poker-tv-broadcast';
 export class TVBroadcaster {
   private static instance: TVBroadcaster;
   private listeners: ((data: TVBroadcastData) => void)[] = [];
+  private lastData: TVBroadcastData | null = null;
+  private pollInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
     // Listen for storage events from other tabs
@@ -27,6 +29,7 @@ export class TVBroadcaster {
       if (e.key === TV_BROADCAST_KEY && e.newValue) {
         try {
           const data = JSON.parse(e.newValue) as TVBroadcastData;
+          this.lastData = data;
           this.notifyListeners(data);
         } catch (error) {
           console.error('Failed to parse TV broadcast data:', error);
@@ -36,8 +39,43 @@ export class TVBroadcaster {
 
     // Listen for events within the same tab
     window.addEventListener('tv-broadcast', ((e: CustomEvent<TVBroadcastData>) => {
+      this.lastData = e.detail;
       this.notifyListeners(e.detail);
     }) as EventListener);
+
+    // Start polling as fallback (especially useful in fullscreen)
+    this.startPolling();
+
+    // Listen for fullscreen changes to adjust polling frequency
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        this.startPolling(500); // More frequent polling in fullscreen
+      } else {
+        this.startPolling(2000); // Less frequent when not fullscreen
+      }
+    });
+  }
+
+  private startPolling(interval: number = 2000) {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
+
+    this.pollInterval = setInterval(() => {
+      const stored = localStorage.getItem(TV_BROADCAST_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored) as TVBroadcastData;
+          // Only notify if data has changed
+          if (!this.lastData || data.timestamp > this.lastData.timestamp) {
+            this.lastData = data;
+            this.notifyListeners(data);
+          }
+        } catch (error) {
+          console.error('Failed to parse stored TV broadcast data during polling:', error);
+        }
+      }
+    }, interval);
   }
 
   static getInstance(): TVBroadcaster {
@@ -65,6 +103,7 @@ export class TVBroadcaster {
     if (stored) {
       try {
         const data = JSON.parse(stored) as TVBroadcastData;
+        this.lastData = data;
         callback(data);
       } catch (error) {
         console.error('Failed to parse stored TV broadcast data:', error);
@@ -74,6 +113,14 @@ export class TVBroadcaster {
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback);
     };
+  }
+
+  destroy() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+    this.listeners = [];
   }
 
   private notifyListeners(data: TVBroadcastData) {
