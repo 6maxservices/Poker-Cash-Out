@@ -1,0 +1,34 @@
+[vite] connecting...
+[vite] connected.
+cn is not defined
+cn is not defined
+The above error occurred in the <PokerCalculator> component:
+
+    at PokerCalculator (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/src/pages/poker-calculator.tsx:34:41)
+    at Route (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7a389bfd:323:16)
+    at Switch (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7a389bfd:379:17)
+    at Router
+    at Provider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-APXNPPBV.js?v=7a389bfd:58:15)
+    at TooltipProvider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=7a389bfd:56:5)
+    at QueryClientProvider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7a389bfd:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+at PokerCalculator (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/src/pages/poker-calculator.tsx:34:41)
+at Route (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7a389bfd:323:16)
+at Switch (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7a389bfd:379:17)
+at Router
+at Provider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-APXNPPBV.js?v=7a389bfd:58:15)
+at TooltipProvider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=7a389bfd:56:5)
+at QueryClientProvider (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7a389bfd:2805:3)
+at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+at t.value (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://5cf9af66-39d9-4875-9f9b-34fb28bebab2-00-12jezti44vnf4.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+cn is not defined
