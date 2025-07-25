@@ -27,11 +27,21 @@ function createDeck(excludedCards: Card[]): Card[] {
   }
   
   // Remove excluded cards
-  return deck.filter(card => 
+  const filteredDeck = deck.filter(card => 
     !excludedCards.some(excluded => 
       excluded.rank === card.rank && excluded.suit === card.suit
     )
   );
+  
+  // Debug: Verify exclusion worked
+  if (excludedCards.length > 0) {
+    console.log(`DEBUG DECK EXCLUSION: Started with ${deck.length} cards, excluded ${excludedCards.length} cards, remaining: ${filteredDeck.length}`);
+    const excludedRanks = excludedCards.map(c => c.rank);
+    const remainingOfSameRank = filteredDeck.filter(c => excludedRanks.includes(c.rank));
+    console.log(`DEBUG: Cards of excluded ranks still in deck: ${remainingOfSameRank.map(c => c.rank + c.suit).join(', ')}`);
+  }
+  
+  return filteredDeck;
 }
 
 // Shuffle array in place

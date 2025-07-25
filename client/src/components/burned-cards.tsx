@@ -55,9 +55,10 @@ export function BurnedCards({
         {burnedCards.map((card, index) => (
           <div
             key={`${card.rank}${card.suit}-${index}`}
-            className="relative group"
+            className="relative group cursor-pointer"
+            onClick={() => onCardRemove(index)}
           >
-            <div className="w-12 h-16 rounded-lg flex flex-col items-center justify-center bg-white border-2 border-red-300 relative">
+            <div className="w-12 h-16 rounded-lg flex flex-col items-center justify-center bg-white border-2 border-red-300 hover:border-red-400 hover:bg-red-50 transition-colors relative">
               <div className={cn(
                 "text-sm font-bold",
                 isRedSuit(card.suit) ? "text-red-600" : "text-black"
@@ -70,14 +71,7 @@ export function BurnedCards({
               )}>
                 {card.suit}
               </div>
-              <Button
-                onClick={() => onCardRemove(index)}
-                size="sm"
-                variant="ghost"
-                className="absolute -top-1 -right-1 w-4 h-4 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-2 h-2" />
-              </Button>
+              {/* Remove X button - use direct click like community cards */}
             </div>
           </div>
         ))}

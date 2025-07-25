@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a real-time poker equity calculator web application built with a modern full-stack architecture. The application allows users to calculate poker hand equity for different game variants (No Limit Hold'em, PLO4, and PLO5) using Monte Carlo simulation. It features an interactive poker table interface with card selection and real-time equity calculations.
+This is a real-time poker equity calculator web application built with a modern full-stack architecture. The application allows users to calculate poker hand equity for different game variants (No Limit Hold'em, PLO4, and PLO5) using Monte Carlo simulation with poker-evaluator library (22MM hands/sec). It features an interactive poker table interface with card selection, burned cards functionality, and real-time equity calculations with professional-grade accuracy.
 
 ## User Preferences
 
