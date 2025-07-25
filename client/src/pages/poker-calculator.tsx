@@ -5,13 +5,14 @@ import { CommunityCards as CommunityCardsComponent } from "@/components/communit
 import { PlayerHand } from "@/components/player-hand";
 import { EquityDisplay } from "@/components/equity-display";
 import { BurnedCards } from "@/components/burned-cards";
+import { PotAmountModal } from "@/components/pot-amount-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Spade, Heart, Calculator } from "lucide-react";
+import { Spade, Heart, Calculator, DollarSign, Edit } from "lucide-react";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -25,8 +26,18 @@ export default function PokerCalculator() {
   const [player2Hand, setPlayer2Hand] = useState<Hand>({ cards: [] });
   const [burnedCards, setBurnedCards] = useState<Card[]>([]);
   const [equityResult, setEquityResult] = useState<EquityResult | null>(null);
+  const [isPotModalOpen, setIsPotModalOpen] = useState(false);
 
   const { toast } = useToast();
+
+  const formatPotAmount = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
 
   const calculateEquityMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -194,59 +205,47 @@ export default function PokerCalculator() {
         <p className="text-gray-300 text-sm">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
       </div>
 
-      {/* Game Settings */}
-      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Label className="text-white font-semibold text-sm">Game:</Label>
-            <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-              <SelectTrigger className="w-40 bg-black text-white border-yellow-500">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nlh">No Limit Hold'em</SelectItem>
-                <SelectItem value="plo4">PLO4 (4-card Omaha)</SelectItem>
-                <SelectItem value="plo5">PLO5 (5-card Omaha)</SelectItem>
-              </SelectContent>
-            </Select>
+      {/* Pot Amount - Prominent Display */}
+      <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-4 mb-6 border-2 border-yellow-400 shadow-2xl">
+        <div className="text-center">
+          <div className="text-black font-bold text-sm mb-2 uppercase tracking-wide">
+            Current Pot Amount
           </div>
-          <div className="flex items-center gap-3">
-            <Label className="text-white font-semibold text-sm">Pot:</Label>
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 font-bold text-sm">$</span>
-              <Input
-                type="number"
-                value={potAmount}
-                onChange={(e) => setPotAmount(Number(e.target.value))}
-                className="w-28 pl-6 bg-black text-white border-yellow-500 focus:ring-yellow-500 h-8"
-                min="0"
-                step="0.01"
-              />
+          <div 
+            className="bg-black bg-opacity-90 rounded-lg p-4 cursor-pointer hover:bg-opacity-80 transition-all duration-200 border border-yellow-300"
+            onClick={() => setIsPotModalOpen(true)}
+          >
+            <div className="flex items-center justify-center gap-3">
+              <DollarSign className="text-yellow-500" size={32} />
+              <span className="text-white font-bold text-3xl md:text-4xl">
+                {formatPotAmount(potAmount)}
+              </span>
+              <Edit className="text-yellow-500" size={20} />
             </div>
+            <p className="text-gray-400 text-sm mt-2">Click to edit pot amount</p>
           </div>
         </div>
       </div>
 
-      {/* Community Cards */}
-      <CommunityCardsComponent
-        flop={communityCards.flop}
-        turn={communityCards.turn}
-        river={communityCards.river}
-        onCardSelect={handleCommunityCardSelect}
-        onCardDeselect={handleCommunityCardDeselect}
-        selectedCards={getAllSelectedCards()}
-      />
+      {/* Game Settings */}
+      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+        <div className="flex items-center justify-center gap-3">
+          <Label className="text-white font-semibold text-sm">Game Variant:</Label>
+          <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
+            <SelectTrigger className="w-48 bg-black text-white border-yellow-500">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nlh">No Limit Hold'em</SelectItem>
+              <SelectItem value="plo4">PLO4 (4-card Omaha)</SelectItem>
+              <SelectItem value="plo5">PLO5 (5-card Omaha)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      {/* Burned Cards */}
-      <BurnedCards
-        burnedCards={burnedCards}
-        onCardAdd={handleBurnedCardAdd}
-        onCardRemove={handleBurnedCardRemove}
-        selectedCards={getAllSelectedCards()}
-      />
-
-      {/* Players */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      {/* Players - Moved before community cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <PlayerHand
           playerNumber={1}
           cards={player1Hand.cards}
@@ -269,6 +268,24 @@ export default function PokerCalculator() {
           selectedCards={getAllSelectedCards()}
         />
       </div>
+
+      {/* Community Cards */}
+      <CommunityCardsComponent
+        flop={communityCards.flop}
+        turn={communityCards.turn}
+        river={communityCards.river}
+        onCardSelect={handleCommunityCardSelect}
+        onCardDeselect={handleCommunityCardDeselect}
+        selectedCards={getAllSelectedCards()}
+      />
+
+      {/* Burned Cards */}
+      <BurnedCards
+        burnedCards={burnedCards}
+        onCardAdd={handleBurnedCardAdd}
+        onCardRemove={handleBurnedCardRemove}
+        selectedCards={getAllSelectedCards()}
+      />
 
       {/* Calculation Controls */}
       <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
@@ -304,6 +321,14 @@ export default function PokerCalculator() {
       <div className="text-center mt-4 text-gray-500">
         <p className="text-xs">© 2024 Professional Poker Tools • Monte Carlo Simulation Engine</p>
       </div>
+
+      {/* Pot Amount Modal */}
+      <PotAmountModal
+        isOpen={isPotModalOpen}
+        onClose={() => setIsPotModalOpen(false)}
+        currentAmount={potAmount}
+        onAmountChange={setPotAmount}
+      />
     </div>
   );
 }
