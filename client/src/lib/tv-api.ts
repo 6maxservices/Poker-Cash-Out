@@ -7,6 +7,10 @@ export interface TVGameState {
   player2Equity: number | null;
   player1MoneyEquity: number | null;
   player2MoneyEquity: number | null;
+  player1Hand: any[] | null;
+  player2Hand: any[] | null;
+  player1CashoutStatus: 'pending' | 'approved' | 'rejected' | null;
+  player2CashoutStatus: 'pending' | 'approved' | 'rejected' | null;
   communityCards: {
     flop: any[];
     turn: any;

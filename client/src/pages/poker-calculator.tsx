@@ -88,6 +88,10 @@ export default function PokerCalculator() {
           player2Equity: result.player2Equity,
           player1MoneyEquity: result.player1MoneyEquity,
           player2MoneyEquity: result.player2MoneyEquity,
+          player1Hand: player1Hand.cards,
+          player2Hand: player2Hand.cards,
+          player1CashoutStatus: player1CashoutStatus,
+          player2CashoutStatus: player2CashoutStatus,
           communityCards: {
             flop: communityCards.flop,
             turn: communityCards.turn,

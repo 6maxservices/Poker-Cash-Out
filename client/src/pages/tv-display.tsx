@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, Wifi, WifiOff, RotateCcw } from "lucide-react";
+import { Monitor, Wifi, WifiOff, RotateCcw, Trophy, Check, X, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function TVDisplay() {
@@ -17,6 +17,7 @@ export default function TVDisplay() {
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [approvedCashouts, setApprovedCashouts] = useState<{[key: string]: { amount: number, timestamp: number }}>({});
 
   const connectToStream = useCallback((code: string) => {
     // Clean up existing connection
@@ -37,6 +38,12 @@ export default function TVDisplay() {
     newEventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as TVGameState;
+        
+        // Check if this is a new hand (handId changed) - clear approved cashouts
+        if (gameState && gameState.handId && data.handId !== gameState.handId) {
+          setApprovedCashouts({});
+        }
+        
         setGameState(data);
         setLastUpdate(new Date());
         console.log('TV Display: Received game state update:', data);
@@ -89,6 +96,76 @@ export default function TVDisplay() {
 
   const formatPercentage = (value: number): string => {
     return `${value.toFixed(1)}%`;
+  };
+
+  const isRedSuit = (suit: string): boolean => {
+    return suit === '♥' || suit === '♦';
+  };
+
+  const renderCard = (card: any) => {
+    if (!card) return null;
+    
+    return (
+      <div className="w-12 h-16 bg-white rounded-lg flex flex-col items-center justify-center shadow-lg border-2 border-gray-300">
+        <div className={cn(
+          "text-sm font-bold",
+          isRedSuit(card.suit) ? "text-red-600" : "text-black"
+        )}>
+          {card.rank}
+        </div>
+        <div className={cn(
+          "text-lg",
+          isRedSuit(card.suit) ? "text-red-600" : "text-black"
+        )}>
+          {card.suit}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCommunityCards = () => {
+    if (!gameState?.communityCards) return null;
+    
+    const { flop, turn, river } = gameState.communityCards;
+    const allCommunityCards = [...(flop || [])];
+    if (turn) allCommunityCards.push(turn);
+    if (river) allCommunityCards.push(river);
+    
+    if (allCommunityCards.length === 0) return null;
+    
+    return (
+      <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-white mb-3">Community Cards</h3>
+          <div className="flex justify-center gap-2">
+            {allCommunityCards.map((card, index) => (
+              <div key={index}>
+                {renderCard(card)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  // Mock function to simulate cashout status - in real app this would come from game state
+  const getCashoutStatus = (playerNumber: number) => {
+    // This would normally come from your game state
+    const key = `player${playerNumber}`;
+    if (approvedCashouts[key]) {
+      return 'approved';
+    }
+    // You would add logic here to check for pending/rejected status from your game state
+    return null;
+  };
+
+  const handleCashoutApproval = (playerNumber: number, amount: number) => {
+    const key = `player${playerNumber}`;
+    setApprovedCashouts(prev => ({
+      ...prev,
+      [key]: { amount, timestamp: Date.now() }
+    }));
   };
 
   // Clean up on unmount
@@ -176,12 +253,12 @@ export default function TVDisplay() {
       </div>
 
       {gameState ? (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Pot Amount - Main Display */}
-          <Card className="p-8 bg-gray-800/90 backdrop-blur border-gray-700">
+          <Card className="p-6 bg-gray-800/90 backdrop-blur border-gray-700">
             <div className="text-center">
-              <p className="text-gray-300 text-xl mb-2">Current Pot</p>
-              <p className="text-6xl font-bold text-yellow-400 mb-4">
+              <p className="text-gray-300 text-lg mb-2">Current Pot</p>
+              <p className="text-5xl font-bold text-yellow-400 mb-3">
                 {formatCurrency(gameState.potAmount)}
               </p>
               <Badge variant="secondary" className="bg-gray-700 text-gray-300">
@@ -190,33 +267,138 @@ export default function TVDisplay() {
             </div>
           </Card>
 
-          {/* Equity Display */}
+          {/* Community Cards */}
+          {renderCommunityCards()}
+
+          {/* Players Display */}
           {gameState.player1Equity !== null && gameState.player2Equity !== null && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6 bg-gray-800/90 backdrop-blur border-gray-700">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-white mb-4">Player 1</h3>
-                  <div className="space-y-2">
-                    <p className="text-3xl font-bold text-green-400">
+              {/* Player 1 */}
+              <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-white">Player 1</h3>
+                  
+                  {/* Player Hand Cards */}
+                  {gameState.player1Hand && gameState.player1Hand.length > 0 && (
+                    <div className="flex justify-center gap-2 mb-3">
+                      {gameState.player1Hand.map((card: any, index: number) => (
+                        <div key={index}>
+                          {renderCard(card)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Equity */}
+                  <div className="bg-green-600/20 border border-green-500 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-green-400 mb-1">
                       {formatPercentage(gameState.player1Equity)}
                     </p>
-                    <p className="text-lg text-gray-300">
-                      {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity) : ''}
+                    <p className="text-sm text-gray-300">Equity</p>
+                  </div>
+                  
+                  {/* Cashout Amount - The King */}
+                  <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-4">
+                    <p className="text-xs text-gray-300 mb-1">CASHOUT AMOUNT</p>
+                    <p className="text-3xl font-bold text-yellow-400">
+                      {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity) : '$0'}
                     </p>
+                  </div>
+                  
+                  {/* Cashout Status */}
+                  {getCashoutStatus(1) === 'approved' && (
+                    <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
+                      <div className="trophy-bounce text-center">
+                        <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                        <div className="text-green-400 font-bold text-lg mb-1">
+                          CASHOUT APPROVED!
+                        </div>
+                        <div className="text-2xl font-bold text-yellow-400">
+                          {formatCurrency(approvedCashouts.player1?.amount || 0)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Mock Cashout Controls for Demo */}
+                  <div className="flex gap-2 justify-center">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleCashoutApproval(1, gameState.player1MoneyEquity || 0)}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-600/20">
+                      <X className="h-4 w-4 mr-1" />
+                      Reject
+                    </Button>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-6 bg-gray-800/90 backdrop-blur border-gray-700">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-white mb-4">Player 2</h3>
-                  <div className="space-y-2">
-                    <p className="text-3xl font-bold text-red-400">
+              {/* Player 2 */}
+              <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-white">Player 2</h3>
+                  
+                  {/* Player Hand Cards */}
+                  {gameState.player2Hand && gameState.player2Hand.length > 0 && (
+                    <div className="flex justify-center gap-2 mb-3">
+                      {gameState.player2Hand.map((card: any, index: number) => (
+                        <div key={index}>
+                          {renderCard(card)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Equity */}
+                  <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
+                    <p className="text-2xl font-bold text-red-400 mb-1">
                       {formatPercentage(gameState.player2Equity)}
                     </p>
-                    <p className="text-lg text-gray-300">
-                      {gameState.player2MoneyEquity ? formatCurrency(gameState.player2MoneyEquity) : ''}
+                    <p className="text-sm text-gray-300">Equity</p>
+                  </div>
+                  
+                  {/* Cashout Amount - The King */}
+                  <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-4">
+                    <p className="text-xs text-gray-300 mb-1">CASHOUT AMOUNT</p>
+                    <p className="text-3xl font-bold text-yellow-400">
+                      {gameState.player2MoneyEquity ? formatCurrency(gameState.player2MoneyEquity) : '$0'}
                     </p>
+                  </div>
+                  
+                  {/* Cashout Status */}
+                  {getCashoutStatus(2) === 'approved' && (
+                    <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
+                      <div className="trophy-bounce text-center">
+                        <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                        <div className="text-green-400 font-bold text-lg mb-1">
+                          CASHOUT APPROVED!
+                        </div>
+                        <div className="text-2xl font-bold text-yellow-400">
+                          {formatCurrency(approvedCashouts.player2?.amount || 0)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Mock Cashout Controls for Demo */}
+                  <div className="flex gap-2 justify-center">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleCashoutApproval(2, gameState.player2MoneyEquity || 0)}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-600/20">
+                      <X className="h-4 w-4 mr-1" />
+                      Reject
+                    </Button>
                   </div>
                 </div>
               </Card>
