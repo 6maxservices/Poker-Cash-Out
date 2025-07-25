@@ -21,6 +21,8 @@ export class TVBroadcaster {
   private static instance: TVBroadcaster;
   private listeners: ((data: TVBroadcastData) => void)[] = [];
   private lastData: TVBroadcastData | null = null;
+  private lastProcessedTimestamp: number = 0;
+  private pollingInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
     console.log('TVBroadcaster: Constructor called');
@@ -56,6 +58,9 @@ export class TVBroadcaster {
       this.lastData = e.detail;
       this.notifyListeners(e.detail);
     }) as EventListener);
+    
+    // Add polling fallback for cross-tab communication
+    this.startPolling();
     
     console.log('TVBroadcaster: All event listeners registered');
   }
@@ -93,6 +98,7 @@ export class TVBroadcaster {
       try {
         const data = JSON.parse(stored) as TVBroadcastData;
         console.log('TVBroadcaster: Sending stored data to new subscriber:', data);
+        this.lastProcessedTimestamp = data.timestamp;
         callback(data);
       } catch (error) {
         console.error('Failed to parse stored TV broadcast data:', error);
@@ -102,6 +108,11 @@ export class TVBroadcaster {
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback);
       console.log('TVBroadcaster: Subscriber removed, total:', this.listeners.length);
+      
+      // Stop polling if no more listeners
+      if (this.listeners.length === 0) {
+        this.stopPolling();
+      }
     };
   }
 
@@ -115,6 +126,41 @@ export class TVBroadcaster {
         console.error(`TV broadcast listener ${index} error:`, error);
       }
     });
+  }
+
+  // Start polling for localStorage changes (fallback for cross-tab communication)
+  private startPolling() {
+    if (this.pollingInterval) return;
+    
+    this.pollingInterval = setInterval(() => {
+      try {
+        const stored = localStorage.getItem(TV_BROADCAST_KEY);
+        if (stored) {
+          const data = JSON.parse(stored) as TVBroadcastData;
+          
+          // Only process if this is newer data and we have listeners
+          if (data.timestamp > this.lastProcessedTimestamp && this.listeners.length > 0) {
+            console.log('TVBroadcaster: Polling detected new data:', data);
+            this.lastProcessedTimestamp = data.timestamp;
+            this.lastData = data;
+            this.notifyListeners(data);
+          }
+        }
+      } catch (error) {
+        console.error('TVBroadcaster: Polling error:', error);
+      }
+    }, 100); // Poll every 100ms
+    
+    console.log('TVBroadcaster: Started polling for cross-tab updates');
+  }
+
+  // Stop polling
+  private stopPolling() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+      console.log('TVBroadcaster: Stopped polling');
+    }
   }
 
   // Debug method to check listener count
