@@ -40,6 +40,9 @@ export function calculateEquity(
   if (burnedCards.length > 0) {
     console.log(`Burned cards: ${burnedCards.map(card => `${card.rank}${card.suit}`).join(', ')}`);
   }
+  console.log(`Player 1 hand: ${player1Hand.cards.map(card => `${card.rank}${card.suit}`).join(', ')}`);
+  console.log(`Player 2 hand: ${player2Hand.cards.map(card => `${card.rank}${card.suit}`).join(', ')}`);
+  console.log(`All known cards: ${Array.from(knownCards).join(', ')}`);
 
   for (let i = 0; i < iterations; i++) {
     // Shuffle available deck
@@ -75,12 +78,17 @@ export function calculateEquity(
   
   const player1Equity = ((player1Wins + ties / 2) / iterations) * 100;
   const player2Equity = ((player2Wins + ties / 2) / iterations) * 100;
+  const tiePercentage = (ties / iterations) * 100;
+
+  console.log(`Results: P1 wins: ${player1Wins}, P2 wins: ${player2Wins}, Ties: ${ties}`);
+  console.log(`Percentages: P1: ${player1Equity.toFixed(1)}%, P2: ${player2Equity.toFixed(1)}%, Ties: ${tiePercentage.toFixed(1)}%`);
 
   return {
     player1Equity,
     player2Equity,
     player1MoneyEquity: (potAmount * player1Equity) / 100,
     player2MoneyEquity: (potAmount * player2Equity) / 100,
+    tiePercentage,
     iterations,
     calculationTime
   };

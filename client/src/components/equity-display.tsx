@@ -31,6 +31,11 @@ export function EquityDisplay({
             <div className="text-gray-400 text-xs">
               <span>{result.iterations.toLocaleString()}</span> iterations • 
               <span className="ml-1">{result.calculationTime.toFixed(3)}s</span>
+              {result.tiePercentage > 0 && (
+                <span className="ml-2 text-orange-400">
+                  • Ties: {result.tiePercentage.toFixed(1)}%
+                </span>
+              )}
             </div>
           )}
         </div>

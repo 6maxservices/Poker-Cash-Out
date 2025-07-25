@@ -48,6 +48,7 @@ export const equityResultSchema = z.object({
   player2Equity: z.number().min(0).max(100),
   player1MoneyEquity: z.number().min(0),
   player2MoneyEquity: z.number().min(0),
+  tiePercentage: z.number().min(0).max(100),
   iterations: z.number(),
   calculationTime: z.number(),
 });
