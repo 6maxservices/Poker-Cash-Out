@@ -82,6 +82,11 @@ export function calculateEquity(
 
   console.log(`Results: P1 wins: ${player1Wins}, P2 wins: ${player2Wins}, Ties: ${ties}`);
   console.log(`Percentages: P1: ${player1Equity.toFixed(1)}%, P2: ${player2Equity.toFixed(1)}%, Ties: ${tiePercentage.toFixed(1)}%`);
+  
+  // Verify burned cards are working correctly
+  if (burnedCards.length > 0) {
+    console.log(`Burned cards effect: Available ${availableDeck.filter(c => c.rank === 'K').length} kings remaining in deck`);
+  }
 
   return {
     player1Equity,
