@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -35,6 +36,29 @@ export default function PokerCalculator() {
   const [resetCashoutTrigger, setResetCashoutTrigger] = useState(false);
 
   const { toast } = useToast();
+
+  const [tvAccessCode, setTvAccessCode] = useState(generateAccessCode());
+  const [tvConnectedClients, setTvConnectedClients] = useState(0);
+
+  useEffect(() => {
+    // In a real implementation, you'd connect to a server-sent events endpoint
+    // and listen for updates to the number of connected clients.
+    // This is a placeholder.
+    // Example:
+    // const eventSource = new EventSource('/api/tv-connections');
+    // eventSource.onmessage = (event) => {
+    //   setTvConnectedClients(parseInt(event.data));
+    // };
+    // return () => eventSource.close();
+  }, []);
+
+  function generateAccessCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+  const regenerateTvCode = () => {
+    setTvAccessCode(generateAccessCode());
+  };
 
   const formatPotAmount = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -389,6 +413,36 @@ export default function PokerCalculator() {
           </div>
         </div>
       </div>
+
+      <div className="space-y-6">
+          {/* TV Broadcast Panel */}
+          <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-2xl p-4 border border-blue-700/50">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Monitor className="h-6 w-6 text-blue-400" />
+                <div>
+                  <h3 className="text-white font-semibold">TV Display</h3>
+                  <p className="text-gray-300 text-sm">Access Code: <span className="font-mono font-bold text-blue-400">{tvAccessCode}</span></p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className="bg-green-600/20 border-green-600 text-green-400">
+                  {tvConnectedClients} Connected
+                </Badge>
+                <Button size="sm" variant="outline" onClick={regenerateTvCode}>
+                  New Code
+                </Button>
+                <Button size="sm" onClick={() => window.open('/tv', '_blank')} className="bg-blue-600 hover:bg-blue-700">
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  Open TV
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl p-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
 
       {/* Players - Moved before community cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
