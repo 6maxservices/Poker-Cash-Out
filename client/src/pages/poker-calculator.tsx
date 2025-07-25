@@ -12,9 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { tvBroadcaster } from "@/lib/tv-broadcaster";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, Calculator, DollarSign, Edit, Plus, Check, Tv } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator } from "lucide-react";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -36,63 +35,6 @@ export default function PokerCalculator() {
   const [resetCashoutTrigger, setResetCashoutTrigger] = useState(false);
 
   const { toast } = useToast();
-
-  // Broadcast data to TV display
-  const broadcastToTV = useCallback(() => {
-    console.log('PokerCalculator: broadcastToTV called');
-    console.log('PokerCalculator: Current data:', {
-      gameVariant,
-      potAmount,
-      player1Cards: player1Hand.cards.length,
-      player2Cards: player2Hand.cards.length,
-      equityResult: !!equityResult,
-    });
-    
-    const player1MoneyEquity = equityResult?.player1MoneyEquity || 0;
-    const player2MoneyEquity = equityResult?.player2MoneyEquity || 0;
-    
-    const broadcastData = {
-      gameVariant,
-      potAmount,
-      player1Cards: player1Hand.cards,
-      player2Cards: player2Hand.cards,
-      player1Equity: equityResult?.player1Equity || 0,
-      player2Equity: equityResult?.player2Equity || 0,
-      player1CashoutAmount: player1MoneyEquity - (player1MoneyEquity * (feePercentage / 100)),
-      player2CashoutAmount: player2MoneyEquity - (player2MoneyEquity * (feePercentage / 100)),
-      player1CashoutStatus,
-      player2CashoutStatus,
-      timestamp: Date.now(),
-    };
-    
-    console.log('PokerCalculator: Broadcasting to TV:', broadcastData);
-    tvBroadcaster.broadcast(broadcastData);
-  }, [
-    gameVariant, 
-    potAmount, 
-    player1Hand.cards, 
-    player2Hand.cards, 
-    equityResult, 
-    feePercentage,
-    player1CashoutStatus, 
-    player2CashoutStatus
-  ]);
-
-  // Auto-broadcast when key data changes
-  useEffect(() => {
-    console.log('PokerCalculator: Auto-broadcasting useEffect triggered');
-    console.log('PokerCalculator: Dependencies changed:', {
-      gameVariant,
-      potAmount,
-      player1CardsLength: player1Hand.cards.length,
-      player2CardsLength: player2Hand.cards.length,
-      hasEquityResult: !!equityResult,
-      feePercentage,
-      player1CashoutStatus,
-      player2CashoutStatus
-    });
-    broadcastToTV();
-  }, [broadcastToTV]);
 
   const formatPotAmount = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -164,9 +106,6 @@ export default function PokerCalculator() {
       burnedCards,
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast]);
-
-  // Manual calculation only - no auto-calculation
-  // Users must click "Calc" button to trigger calculations
 
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
@@ -242,12 +181,10 @@ export default function PokerCalculator() {
     }));
   };
 
-  // Check if any player has approved cashout
   const hasApprovedCashout = (): boolean => {
     return player1CashoutStatus === 'approved' || player2CashoutStatus === 'approved';
   };
 
-  // Handle cashout status changes from player components
   const handleCashoutStatusChange = (playerNumber: 1 | 2, status: 'pending' | 'approved' | 'rejected' | null) => {
     if (playerNumber === 1) {
       setPlayer1CashoutStatus(status);
@@ -256,22 +193,20 @@ export default function PokerCalculator() {
     }
   };
 
-  // Check if all community cards are filled
   const areAllCommunityCardsFilled = (): boolean => {
     return communityCards.flop.length === 3 && 
            communityCards.turn !== undefined && 
            communityCards.river !== undefined;
   };
 
-  // Check if hand can be finished
   const canFinishHand = (): boolean => {
     const hasApproved = hasApprovedCashout();
     const allCardsFilled = areAllCommunityCardsFilled();
-    
+
     if (hasApproved && !allCardsFilled) {
       return false; // Cannot finish if cashout approved but cards not filled
     }
-    
+
     return player1Hand.cards.length > 0 || player2Hand.cards.length > 0 || 
            communityCards.flop.length > 0 || burnedCards.length > 0;
   };
@@ -286,11 +221,11 @@ export default function PokerCalculator() {
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
     setPotAmount(100); // Reset pot to default amount
-    
+
     // Trigger reset for player components
     setResetCashoutTrigger(true);
     setTimeout(() => setResetCashoutTrigger(false), 100);
-    
+
     toast({
       title: "New Hand Started",
       description: "Ready to deal a new hand with fresh pot",
@@ -307,7 +242,7 @@ export default function PokerCalculator() {
         });
         return;
       }
-      
+
       toast({
         title: "Cannot Finish Hand",
         description: "No cards have been dealt in this hand",
@@ -337,7 +272,7 @@ export default function PokerCalculator() {
     };
 
     console.log('Saving completed hand:', handData);
-    
+
     toast({
       title: "Hand Finished & Saved",
       description: "Hand has been completed and saved to records",
@@ -372,7 +307,7 @@ export default function PokerCalculator() {
     };
 
     console.log('Saving hand data:', handData);
-    
+
     toast({
       title: "Hand Saved",
       description: "Hand data has been saved successfully",
@@ -397,16 +332,6 @@ export default function PokerCalculator() {
           <Heart className="inline text-red-500 ml-2" size={24} />
         </h1>
         <p className="text-gray-300 text-sm">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
-        <div className="mt-3">
-          <Button
-            onClick={() => window.open('/tv', '_blank')}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2"
-            size="sm"
-          >
-            <Tv className="mr-2 h-4 w-4" />
-            Open TV Display
-          </Button>
-        </div>
       </div>
 
       {/* Pot Amount - Prominent Display */}
@@ -424,7 +349,6 @@ export default function PokerCalculator() {
               <span className="text-white font-bold text-3xl md:text-4xl">
                 {formatPotAmount(potAmount)}
               </span>
-              <Edit className="text-yellow-500" size={20} />
             </div>
             <p className="text-gray-400 text-sm mt-2">Click to edit pot amount</p>
           </div>
@@ -447,7 +371,7 @@ export default function PokerCalculator() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Label className="text-white font-semibold text-sm">Service Fee:</Label>
             <div className="flex items-center gap-1">
@@ -521,17 +445,16 @@ export default function PokerCalculator() {
           <span className="text-red-500 mr-2">🎰</span>
           Dealer Controls
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Button
             onClick={handleNewHand}
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-4"
           >
-            <Plus className="mr-2 h-5 w-5" />
             New Hand
           </Button>
-          
+
           <Button
             onClick={handleFinishHand}
             disabled={!canFinishHand()}
@@ -543,7 +466,6 @@ export default function PokerCalculator() {
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             )}
           >
-            <Check className="mr-2 h-5 w-5" />
             Finish & Save Hand
           </Button>
         </div>
@@ -581,7 +503,7 @@ export default function PokerCalculator() {
             </p>
           )}
         </div>
-        
+
         {/* Results Display */}
         <EquityDisplay
           result={equityResult}
