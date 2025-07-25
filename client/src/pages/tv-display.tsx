@@ -289,7 +289,7 @@ export default function TVDisplay() {
       case 'nlh': return 'NO LIMIT HOLD\'EM';
       case 'plo4': return 'PLO4 (4-CARD OMAHA)';
       case 'plo5': return 'PLO5 (5-CARD OMAHA)';
-      default: return variant.toUpperCase();
+      default: return String(variant).toUpperCase();
     }
   };
 
