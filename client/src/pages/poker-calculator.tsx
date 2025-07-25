@@ -443,6 +443,9 @@ export default function PokerCalculator() {
 
           <div className="bg-gray-900 rounded-2xl p-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
+            </div>
+          </div>
+        </div>
 
       {/* Players - Moved before community cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
