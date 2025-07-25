@@ -25,6 +25,16 @@ export class TVBroadcaster {
   private constructor() {
     console.log('TVBroadcaster: Constructor called');
     
+    // Test if we can access localStorage
+    try {
+      const testKey = 'tv-broadcaster-test';
+      localStorage.setItem(testKey, 'test');
+      localStorage.removeItem(testKey);
+      console.log('TVBroadcaster: localStorage access confirmed');
+    } catch (error) {
+      console.error('TVBroadcaster: localStorage access failed:', error);
+    }
+    
     // Listen for storage events from other tabs
     window.addEventListener('storage', (e) => {
       console.log('TVBroadcaster: Storage event received:', e.key, e.newValue);
@@ -35,7 +45,7 @@ export class TVBroadcaster {
           this.lastData = data;
           this.notifyListeners(data);
         } catch (error) {
-          console.error('Failed to parse TV broadcast data:', error);
+          console.error('TVBroadcaster: Failed to parse storage data:', error);
         }
       }
     });
@@ -46,6 +56,8 @@ export class TVBroadcaster {
       this.lastData = e.detail;
       this.notifyListeners(e.detail);
     }) as EventListener);
+    
+    console.log('TVBroadcaster: All event listeners registered');
   }
 
   static getInstance(): TVBroadcaster {
@@ -106,4 +118,7 @@ export class TVBroadcaster {
   }
 }
 
+// Create and export the singleton instance
+console.log('TVBroadcaster: Creating singleton instance');
 export const tvBroadcaster = TVBroadcaster.getInstance();
+console.log('TVBroadcaster: Singleton instance created');

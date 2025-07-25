@@ -195,13 +195,24 @@ export default function TVDisplay() {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    console.log('TV Display: Setting up subscription');
+    console.log('TV Display: Component mounted, setting up subscription');
+    console.log('TV Display: tvBroadcaster instance:', tvBroadcaster);
+    
     const unsubscribe = tvBroadcaster.subscribe((data: TVBroadcastData) => {
-      console.log('TV Display received update:', data);
+      console.log('TV Display: Received update:', data);
       setGameData(data);
     });
 
-    console.log('TV Display: Subscription set up, unsubscribe function:', unsubscribe);
+    console.log('TV Display: Subscription set up, unsubscribe function:', typeof unsubscribe);
+    
+    // Test if there's existing data
+    const existing = localStorage.getItem('poker-tv-broadcast');
+    if (existing) {
+      console.log('TV Display: Found existing data in localStorage:', existing);
+    } else {
+      console.log('TV Display: No existing data in localStorage');
+    }
+    
     return unsubscribe;
   }, []);
 
