@@ -54,7 +54,7 @@ export function EquityDisplay({
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold text-xs h-8"
           >
             <Calculator className="mr-1 h-3 w-3" />
-            Recalc
+            {isCalculating ? 'Calculating...' : 'Calc'}
           </Button>
           <Button
             onClick={onSave}

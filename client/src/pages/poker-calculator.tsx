@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Spade, Heart } from "lucide-react";
+import { Spade, Heart, Calculator } from "lucide-react";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -72,6 +72,14 @@ export default function PokerCalculator() {
       return;
     }
 
+    console.log('Manual calculation triggered with:');
+    console.log('- Game variant:', gameVariant);
+    console.log('- Community cards:', communityCards);
+    console.log('- Player 1 hand:', player1Hand.cards.map(c => c.rank + c.suit).join(', ') || 'none');
+    console.log('- Player 2 hand:', player2Hand.cards.map(c => c.rank + c.suit).join(', ') || 'none');
+    console.log('- Burned cards:', burnedCards.map(c => c.rank + c.suit).join(', ') || 'none');
+    console.log('- Pot amount:', potAmount);
+
     calculateEquityMutation.mutate({
       gameVariant,
       communityCards,
@@ -80,21 +88,10 @@ export default function PokerCalculator() {
       potAmount,
       burnedCards,
     });
-  }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, canCalculate, toast]);
+  }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast]);
 
-  // Auto-calculate when hands are complete, but NOT when only burned cards change
-  useEffect(() => {
-    if (canCalculate()) {
-      handleCalculateEquity();
-    }
-  }, [canCalculate, handleCalculateEquity]);
-
-  // Auto-calculate when burned cards change (after initial hand completion)
-  useEffect(() => {
-    if (canCalculate() && equityResult) { // Only if we already have a result
-      handleCalculateEquity();
-    }
-  }, [burnedCards]);
+  // Manual calculation only - no auto-calculation
+  // Users must click "Calc" button to trigger calculations
 
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
@@ -273,15 +270,35 @@ export default function PokerCalculator() {
         />
       </div>
 
-      {/* Calculation Status */}
-      <EquityDisplay
-        result={equityResult}
-        isCalculating={calculateEquityMutation.isPending}
-        onRecalculate={handleCalculateEquity}
-        onSave={handleSave}
-        onReset={handleReset}
-        burnedCardsCount={burnedCards.length}
-      />
+      {/* Calculation Controls */}
+      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+        <div className="text-center mb-3">
+          <Button
+            onClick={handleCalculateEquity}
+            disabled={!canCalculate() || calculateEquityMutation.isPending}
+            size="lg"
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-sm px-8 py-3"
+          >
+            <Calculator className="mr-2 h-4 w-4" />
+            {calculateEquityMutation.isPending ? 'Calculating...' : 'Calculate Equity'}
+          </Button>
+          {!canCalculate() && (
+            <p className="text-gray-400 text-xs mt-2">
+              Select all required cards for both players to calculate
+            </p>
+          )}
+        </div>
+        
+        {/* Results Display */}
+        <EquityDisplay
+          result={equityResult}
+          isCalculating={calculateEquityMutation.isPending}
+          onRecalculate={handleCalculateEquity}
+          onSave={handleSave}
+          onReset={handleReset}
+          burnedCardsCount={burnedCards.length}
+        />
+      </div>
 
       {/* Footer */}
       <div className="text-center mt-4 text-gray-500">
