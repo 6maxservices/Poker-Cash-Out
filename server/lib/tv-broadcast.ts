@@ -29,15 +29,15 @@ class TVBroadcastManager extends EventEmitter {
   private constructor() {
     super();
     this.gameState = {
-      potAmount: 0,
+      potAmount: 100,
       gameVariant: 'nlh',
       handId: null,
       player1Equity: null,
       player2Equity: null,
       player1MoneyEquity: null,
       player2MoneyEquity: null,
-      player1Hand: null,
-      player2Hand: null,
+      player1Hand: [],
+      player2Hand: [],
       player1CashoutStatus: null,
       player2CashoutStatus: null,
       communityCards: { flop: [], turn: null, river: null },

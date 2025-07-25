@@ -157,6 +157,33 @@ export default function PokerCalculator() {
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast, calculateEquityMutation]);
 
+  // Send TV broadcast whenever pot amount changes
+  useEffect(() => {
+    try {
+      tvApiClient.updateGameState({
+        potAmount,
+        gameVariant,
+        handId,
+        player1Equity: equityResult?.player1Equity || null,
+        player2Equity: equityResult?.player2Equity || null,
+        player1MoneyEquity: equityResult?.player1MoneyEquity || null,
+        player2MoneyEquity: equityResult?.player2MoneyEquity || null,
+        player1Hand: player1Hand.cards,
+        player2Hand: player2Hand.cards,
+        player1CashoutStatus: player1CashoutStatus,
+        player2CashoutStatus: player2CashoutStatus,
+        communityCards: {
+          flop: communityCards.flop,
+          turn: communityCards.turn,
+          river: communityCards.river,
+        }
+      });
+      console.log('TV Broadcast sent for pot update:', potAmount);
+    } catch (tvError) {
+      console.error('Failed to broadcast pot update to TV:', tvError);
+    }
+  }, [potAmount]);
+
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
       if (position === 'flop') {
