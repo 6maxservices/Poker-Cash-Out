@@ -4,8 +4,7 @@ import { Card, GameVariant, EquityResult } from "@shared/schema";
 import { formatCurrency } from "@/lib/poker-utils";
 import { cn } from "@/lib/utils";
 import { tvBroadcaster, TVBroadcastData } from "@/lib/tv-broadcaster";
-import { Button } from "@/components/ui/button";
-import { Trophy, Spade, Heart, DollarSign, Maximize, Minimize } from "lucide-react";
+import { Trophy, Spade, Heart, DollarSign } from "lucide-react";
 
 interface TVDisplayProps {
   gameVariant: GameVariant;
@@ -193,78 +192,16 @@ export default function TVDisplay() {
   const [showPlayer2Animation, setShowPlayer2Animation] = useState(false);
   const [prevPlayer1Status, setPrevPlayer1Status] = useState<string | null>(null);
   const [prevPlayer2Status, setPrevPlayer2Status] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
 
   // Subscribe to real-time updates
   useEffect(() => {
-    console.log('TV Display: Setting up subscription');
     const unsubscribe = tvBroadcaster.subscribe((data: TVBroadcastData) => {
-      console.log('TV Display received update:', {
-        timestamp: data.timestamp,
-        isFullscreen: !!document.fullscreenElement,
-        gameVariant: data.gameVariant,
-        potAmount: data.potAmount,
-        player1Status: data.player1CashoutStatus,
-        player2Status: data.player2CashoutStatus
-      });
+      console.log('TV Display received update:', data);
       setGameData(data);
-      setLastUpdateTime(Date.now());
     });
 
-    return () => {
-      console.log('TV Display: Cleaning up subscription');
-      unsubscribe();
-    };
+    return unsubscribe;
   }, []);
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-    };
-  }, []);
-
-  const toggleFullscreen = async () => {
-    try {
-      if (!isFullscreen) {
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-          await elem.requestFullscreen();
-        } else if ((elem as any).webkitRequestFullscreen) {
-          await (elem as any).webkitRequestFullscreen();
-        } else if ((elem as any).mozRequestFullScreen) {
-          await (elem as any).mozRequestFullScreen();
-        } else if ((elem as any).msRequestFullscreen) {
-          await (elem as any).msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen();
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen();
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling fullscreen:', error);
-    }
-  };
 
   // Watch for cashout status changes to trigger animations
   useEffect(() => {
@@ -291,25 +228,7 @@ export default function TVDisplay() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-8 relative">
-      {/* Fullscreen Button */}
-      <div className="absolute top-4 right-4 z-50">
-        <Button
-          onClick={toggleFullscreen}
-          className="bg-gray-800 bg-opacity-80 hover:bg-gray-700 text-white border border-gray-600 backdrop-blur-sm"
-          size="lg"
-        >
-          {isFullscreen ? (
-            <Minimize className="h-6 w-6" />
-          ) : (
-            <Maximize className="h-6 w-6" />
-          )}
-          <span className="ml-2 hidden sm:inline">
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </span>
-        </Button>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 p-8">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-7xl font-bold text-white mb-4">
@@ -371,10 +290,6 @@ export default function TVDisplay() {
       {/* Footer */}
       <div className="text-center mt-8 text-gray-400">
         <p className="text-xl">LIVE EQUITY DISPLAY • REAL-TIME UPDATES</p>
-        <p className="text-sm mt-2 opacity-75">
-          Last Update: {new Date(lastUpdateTime).toLocaleTimeString()} 
-          {isFullscreen ? ' • FULLSCREEN MODE' : ''}
-        </p>
       </div>
     </div>
   );

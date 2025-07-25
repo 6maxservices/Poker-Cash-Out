@@ -42,7 +42,7 @@ export default function PokerCalculator() {
     const player1MoneyEquity = equityResult?.player1MoneyEquity || 0;
     const player2MoneyEquity = equityResult?.player2MoneyEquity || 0;
     
-    const broadcastData = {
+    tvBroadcaster.broadcast({
       gameVariant,
       potAmount,
       player1Cards: player1Hand.cards,
@@ -54,10 +54,7 @@ export default function PokerCalculator() {
       player1CashoutStatus,
       player2CashoutStatus,
       timestamp: Date.now(),
-    };
-    
-    console.log('PokerCalculator: Broadcasting to TV:', broadcastData);
-    tvBroadcaster.broadcast(broadcastData);
+    });
   }, [
     gameVariant, 
     potAmount, 
