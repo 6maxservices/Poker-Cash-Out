@@ -39,6 +39,13 @@ export class TVBroadcaster {
         }
       }
     });
+
+    // Listen for events within the same tab
+    window.addEventListener('tv-broadcast', ((e: CustomEvent<TVBroadcastData>) => {
+      console.log('TVBroadcaster: Received custom event:', e.detail);
+      this.lastData = e.detail;
+      this.notifyListeners(e.detail);
+    }) as EventListener);
   }
 
   static getInstance(): TVBroadcaster {
@@ -56,9 +63,10 @@ export class TVBroadcaster {
     // Store in localStorage for cross-tab communication
     localStorage.setItem(TV_BROADCAST_KEY, JSON.stringify(data));
     
-    // Store locally and notify current listeners immediately
-    this.lastData = data;
-    this.notifyListeners(data);
+    // Always dispatch custom event for same-tab communication
+    // This ensures updates work even when both calculator and TV are in same tab/window
+    const event = new CustomEvent('tv-broadcast', { detail: data });
+    window.dispatchEvent(event);
     
     console.log('TVBroadcaster: Broadcast complete');
   }
@@ -67,14 +75,13 @@ export class TVBroadcaster {
     console.log('TVBroadcaster: New subscriber added, total:', this.listeners.length + 1);
     this.listeners.push(callback);
     
-    // Send current data from localStorage if available
+    // Send current data if available
     const stored = localStorage.getItem(TV_BROADCAST_KEY);
     if (stored) {
       try {
         const data = JSON.parse(stored) as TVBroadcastData;
         console.log('TVBroadcaster: Sending stored data to new subscriber:', data);
-        // Use setTimeout to ensure the callback is called after the component is mounted
-        setTimeout(() => callback(data), 0);
+        callback(data);
       } catch (error) {
         console.error('Failed to parse stored TV broadcast data:', error);
       }
