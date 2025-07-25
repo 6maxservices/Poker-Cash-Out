@@ -32,6 +32,7 @@ export default function PokerCalculator() {
   const [handId, setHandId] = useState<string | null>(null);
   const [player1CashoutStatus, setPlayer1CashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [player2CashoutStatus, setPlayer2CashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
+  const [resetCashoutTrigger, setResetCashoutTrigger] = useState(false);
 
   const { toast } = useToast();
 
@@ -227,6 +228,10 @@ export default function PokerCalculator() {
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
     
+    // Trigger reset for player components
+    setResetCashoutTrigger(true);
+    setTimeout(() => setResetCashoutTrigger(false), 100);
+    
     toast({
       title: "New Hand Started",
       description: "Ready to deal a new hand",
@@ -405,6 +410,7 @@ export default function PokerCalculator() {
           onCardDeselect={handlePlayer1CardDeselect}
           selectedCards={getAllSelectedCards()}
           onCashoutStatusChange={handleCashoutStatusChange}
+          resetCashoutStatus={resetCashoutTrigger}
         />
 
         <PlayerHand
@@ -418,6 +424,7 @@ export default function PokerCalculator() {
           onCardDeselect={handlePlayer2CardDeselect}
           selectedCards={getAllSelectedCards()}
           onCashoutStatusChange={handleCashoutStatusChange}
+          resetCashoutStatus={resetCashoutTrigger}
         />
       </div>
 

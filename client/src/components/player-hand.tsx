@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, GameVariant } from "@shared/schema";
 import { CardSelectorModal } from "./card-selector-modal";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ interface PlayerHandProps {
   onCardDeselect: (index: number) => void;
   selectedCards: Card[];
   onCashoutStatusChange?: (playerNumber: 1 | 2, status: 'pending' | 'approved' | 'rejected' | null) => void;
+  resetCashoutStatus?: boolean;
 }
 
 export function PlayerHand({
@@ -29,10 +30,19 @@ export function PlayerHand({
   onCardSelect,
   onCardDeselect,
   selectedCards,
-  onCashoutStatusChange
+  onCashoutStatusChange,
+  resetCashoutStatus
 }: PlayerHandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cashoutStatus, setCashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
+
+  // Reset cashout status when new hand starts
+  useEffect(() => {
+    if (resetCashoutStatus) {
+      setCashoutStatus(null);
+      onCashoutStatusChange?.(playerNumber, null);
+    }
+  }, [resetCashoutStatus, playerNumber, onCashoutStatusChange]);
   const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
   const potOdds = calculatePotOdds(equity);
   
