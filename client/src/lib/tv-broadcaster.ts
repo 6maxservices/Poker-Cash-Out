@@ -92,17 +92,22 @@ export class TVBroadcaster {
     console.log('TVBroadcaster: New subscriber added, total:', this.listeners.length + 1);
     this.listeners.push(callback);
     
-    // Send current data if available
+    // Send current data if available and initialize timestamp tracking
     const stored = localStorage.getItem(TV_BROADCAST_KEY);
     if (stored) {
       try {
         const data = JSON.parse(stored) as TVBroadcastData;
         console.log('TVBroadcaster: Sending stored data to new subscriber:', data);
+        console.log('TVBroadcaster: Setting initial timestamp to:', data.timestamp);
         this.lastProcessedTimestamp = data.timestamp;
         callback(data);
       } catch (error) {
         console.error('Failed to parse stored TV broadcast data:', error);
       }
+    } else {
+      // If no stored data, set timestamp to 0 so any new data will be processed
+      this.lastProcessedTimestamp = 0;
+      console.log('TVBroadcaster: No stored data, setting timestamp to 0');
     }
 
     return () => {
@@ -135,12 +140,17 @@ export class TVBroadcaster {
     this.pollingInterval = setInterval(() => {
       try {
         const stored = localStorage.getItem(TV_BROADCAST_KEY);
-        if (stored) {
+        if (stored && this.listeners.length > 0) {
           const data = JSON.parse(stored) as TVBroadcastData;
           
-          // Only process if this is newer data and we have listeners
-          if (data.timestamp > this.lastProcessedTimestamp && this.listeners.length > 0) {
-            console.log('TVBroadcaster: Polling detected new data:', data);
+          // Always process if timestamp is different (newer OR older, in case of clock differences)
+          // This ensures we catch updates even if there are timestamp inconsistencies
+          if (data.timestamp !== this.lastProcessedTimestamp) {
+            console.log('TVBroadcaster: Polling detected data change:', {
+              old: this.lastProcessedTimestamp,
+              new: data.timestamp,
+              data: data
+            });
             this.lastProcessedTimestamp = data.timestamp;
             this.lastData = data;
             this.notifyListeners(data);
