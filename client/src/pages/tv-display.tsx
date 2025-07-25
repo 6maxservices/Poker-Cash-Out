@@ -198,22 +198,49 @@ export default function TVDisplay() {
     console.log('TV Display: Component mounted, setting up subscription');
     console.log('TV Display: tvBroadcaster instance:', tvBroadcaster);
     
-    const unsubscribe = tvBroadcaster.subscribe((data: TVBroadcastData) => {
+    // Create a stable subscription function
+    const handleUpdate = (data: TVBroadcastData) => {
       console.log('TV Display: Received update:', data);
       setGameData(data);
-    });
-
-    console.log('TV Display: Subscription set up, unsubscribe function:', typeof unsubscribe);
+    };
+    
+    // Subscribe with error handling
+    let unsubscribe: (() => void) | null = null;
+    try {
+      console.log('TV Display: Attempting to subscribe...');
+      unsubscribe = tvBroadcaster.subscribe(handleUpdate);
+      console.log('TV Display: Successfully subscribed, unsubscribe function:', typeof unsubscribe);
+    } catch (error) {
+      console.error('TV Display: Failed to subscribe:', error);
+    }
     
     // Test if there's existing data
     const existing = localStorage.getItem('poker-tv-broadcast');
     if (existing) {
       console.log('TV Display: Found existing data in localStorage:', existing);
+      try {
+        const parsedData = JSON.parse(existing);
+        console.log('TV Display: Loading existing data:', parsedData);
+        setGameData(parsedData);
+      } catch (error) {
+        console.error('TV Display: Failed to parse existing data:', error);
+      }
     } else {
       console.log('TV Display: No existing data in localStorage');
     }
     
-    return unsubscribe;
+    // Cleanup function
+    return () => {
+      console.log('TV Display: Cleaning up subscription');
+      if (unsubscribe) {
+        try {
+          unsubscribe();
+          console.log('TV Display: Successfully unsubscribed');
+        } catch (error) {
+          console.error('TV Display: Error during cleanup:', error);
+        }
+      }
+    };
   }, []);
 
   // Watch for cashout status changes to trigger animations
