@@ -149,24 +149,37 @@ export default function TVDisplay() {
     );
   };
 
-  // Mock function to simulate cashout status - in real app this would come from game state
+  // Get real cashout status from game state
   const getCashoutStatus = (playerNumber: number) => {
-    // This would normally come from your game state
-    const key = `player${playerNumber}`;
-    if (approvedCashouts[key]) {
-      return 'approved';
+    if (!gameState) return null;
+    
+    if (playerNumber === 1) {
+      return gameState.player1CashoutStatus;
+    } else {
+      return gameState.player2CashoutStatus;
     }
-    // You would add logic here to check for pending/rejected status from your game state
-    return null;
   };
 
-  const handleCashoutApproval = (playerNumber: number, amount: number) => {
-    const key = `player${playerNumber}`;
-    setApprovedCashouts(prev => ({
-      ...prev,
-      [key]: { amount, timestamp: Date.now() }
-    }));
-  };
+  // Handle when cashout gets approved - store for animation
+  useEffect(() => {
+    if (gameState) {
+      // Check if player 1 cashout was just approved
+      if (gameState.player1CashoutStatus === 'approved' && !approvedCashouts.player1) {
+        setApprovedCashouts(prev => ({
+          ...prev,
+          player1: { amount: gameState.player1MoneyEquity || 0, timestamp: Date.now() }
+        }));
+      }
+      
+      // Check if player 2 cashout was just approved
+      if (gameState.player2CashoutStatus === 'approved' && !approvedCashouts.player2) {
+        setApprovedCashouts(prev => ({
+          ...prev,
+          player2: { amount: gameState.player2MoneyEquity || 0, timestamp: Date.now() }
+        }));
+      }
+    }
+  }, [gameState?.player1CashoutStatus, gameState?.player2CashoutStatus, approvedCashouts]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -305,7 +318,21 @@ export default function TVDisplay() {
                     </p>
                   </div>
                   
-                  {/* Cashout Status */}
+                  {/* Cashout Status Display */}
+                  {getCashoutStatus(1) === 'pending' && (
+                    <div className="bg-orange-600/20 border border-orange-500 rounded-lg p-3">
+                      <div className="text-center">
+                        <Clock className="h-6 w-6 text-orange-400 mx-auto mb-2" />
+                        <div className="text-orange-400 font-bold text-lg mb-1">
+                          CASHOUT PENDING
+                        </div>
+                        <div className="text-sm text-gray-300">
+                          Awaiting approval...
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {getCashoutStatus(1) === 'approved' && (
                     <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
                       <div className="trophy-bounce text-center">
@@ -314,27 +341,25 @@ export default function TVDisplay() {
                           CASHOUT APPROVED!
                         </div>
                         <div className="text-2xl font-bold text-yellow-400">
-                          {formatCurrency(approvedCashouts.player1?.amount || 0)}
+                          {formatCurrency(approvedCashouts.player1?.amount || gameState.player1MoneyEquity || 0)}
                         </div>
                       </div>
                     </div>
                   )}
                   
-                  {/* Mock Cashout Controls for Demo */}
-                  <div className="flex gap-2 justify-center">
-                    <Button 
-                      size="sm" 
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => handleCashoutApproval(1, gameState.player1MoneyEquity || 0)}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-600/20">
-                      <X className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
+                  {getCashoutStatus(1) === 'rejected' && (
+                    <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
+                      <div className="text-center">
+                        <X className="h-6 w-6 text-red-400 mx-auto mb-2" />
+                        <div className="text-red-400 font-bold text-lg mb-1">
+                          CASHOUT REJECTED
+                        </div>
+                        <div className="text-sm text-gray-300">
+                          Player continues in hand
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -370,7 +395,21 @@ export default function TVDisplay() {
                     </p>
                   </div>
                   
-                  {/* Cashout Status */}
+                  {/* Cashout Status Display */}
+                  {getCashoutStatus(2) === 'pending' && (
+                    <div className="bg-orange-600/20 border border-orange-500 rounded-lg p-3">
+                      <div className="text-center">
+                        <Clock className="h-6 w-6 text-orange-400 mx-auto mb-2" />
+                        <div className="text-orange-400 font-bold text-lg mb-1">
+                          CASHOUT PENDING
+                        </div>
+                        <div className="text-sm text-gray-300">
+                          Awaiting approval...
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {getCashoutStatus(2) === 'approved' && (
                     <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
                       <div className="trophy-bounce text-center">
@@ -379,27 +418,25 @@ export default function TVDisplay() {
                           CASHOUT APPROVED!
                         </div>
                         <div className="text-2xl font-bold text-yellow-400">
-                          {formatCurrency(approvedCashouts.player2?.amount || 0)}
+                          {formatCurrency(approvedCashouts.player2?.amount || gameState.player2MoneyEquity || 0)}
                         </div>
                       </div>
                     </div>
                   )}
                   
-                  {/* Mock Cashout Controls for Demo */}
-                  <div className="flex gap-2 justify-center">
-                    <Button 
-                      size="sm" 
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => handleCashoutApproval(2, gameState.player2MoneyEquity || 0)}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-600/20">
-                      <X className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
+                  {getCashoutStatus(2) === 'rejected' && (
+                    <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
+                      <div className="text-center">
+                        <X className="h-6 w-6 text-red-400 mx-auto mb-2" />
+                        <div className="text-red-400 font-bold text-lg mb-1">
+                          CASHOUT REJECTED
+                        </div>
+                        <div className="text-sm text-gray-300">
+                          Player continues in hand
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>
