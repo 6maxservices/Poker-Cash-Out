@@ -1,0 +1,48 @@
+TVBroadcaster: Constructor called
+TVBroadcaster: localStorage access confirmed
+TVBroadcaster: Started polling for cross-tab updates
+TVBroadcaster: All event listeners registered
+TVBroadcaster: Singleton instance created
+PokerCalculator: Auto-broadcasting useEffect triggered
+PokerCalculator: Dependencies changed: 
+Object {gameVariant: "nlh", potAmount: 100, player1CardsLength: 0, player2CardsLength: 0, hasEquityResult: false, …}
+PokerCalculator: broadcastToTV called
+PokerCalculator: Current data: 
+Object {gameVariant: "nlh", potAmount: 100, player1Cards: 0, player2Cards: 0, equityResult: false}
+PokerCalculator: Broadcasting to TV: 
+Object {gameVariant: "nlh", potAmount: 100, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Broadcasting data: 
+Object {gameVariant: "nlh", potAmount: 100, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Received custom event: 
+Object {gameVariant: "nlh", potAmount: 100, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Notifying 0 listeners with data: 
+Object {gameVariant: "nlh", potAmount: 100, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Broadcast complete
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+PokerCalculator: Auto-broadcasting useEffect triggered
+PokerCalculator: Dependencies changed: 
+Object {gameVariant: "nlh", potAmount: 2500, player1CardsLength: 0, player2CardsLength: 0, hasEquityResult: false, …}
+PokerCalculator: broadcastToTV called
+PokerCalculator: Current data: 
+Object {gameVariant: "nlh", potAmount: 2500, player1Cards: 0, player2Cards: 0, equityResult: false}
+PokerCalculator: Broadcasting to TV: 
+Object {gameVariant: "nlh", potAmount: 2500, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Broadcasting data: 
+Object {gameVariant: "nlh", potAmount: 2500, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Received custom event: 
+Object {gameVariant: "nlh", potAmount: 2500, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+TVBroadcaster: Notifying 0 listeners with data: 
+Object {gameVariant: "nlh", potAmount: 2500, player1Cards: Array(0), player2Cards: Array(0), player1Equity: 0, …}
+gameVariant: "nlh"
+player1Cards: Array(0)
+player1CashoutAmount: 0
+player1CashoutStatus: null
+player1Equity: 0
+player2Cards: Array(0)
+player2CashoutAmount: 0
+player2CashoutStatus: null
+player2Equity: 0
+potAmount: 2500
+timestamp: 1753483726356
+[[Prototype]]: Object
+TVBroadcaster: Broadcast complete
