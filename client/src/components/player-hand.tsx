@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Card, GameVariant } from "@shared/schema";
-import { CardSelector } from "./card-selector";
+import { CardSelectorModal } from "./card-selector-modal";
 import { cn } from "@/lib/utils";
 import { isRedSuit, formatCurrency, calculatePotOdds } from "@/lib/poker-utils";
 import { Plus, User } from "lucide-react";
@@ -11,10 +12,7 @@ interface PlayerHandProps {
   moneyEquity: number;
   gameVariant: GameVariant;
   onCardSelect: (card: Card) => void;
-  onCardDeselect: (card: Card) => void;
   selectedCards: Card[];
-  showSelector: boolean;
-  onToggleSelector: () => void;
 }
 
 export function PlayerHand({
@@ -24,17 +22,15 @@ export function PlayerHand({
   moneyEquity,
   gameVariant,
   onCardSelect,
-  onCardDeselect,
-  selectedCards,
-  showSelector,
-  onToggleSelector
+  selectedCards
 }: PlayerHandProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
   const potOdds = calculatePotOdds(equity);
   
   const handleCardSelect = (card: Card) => {
     onCardSelect(card);
-    onToggleSelector();
+    setIsModalOpen(false);
   };
 
   const renderCardSlot = (index: number) => {
@@ -42,15 +38,15 @@ export function PlayerHand({
     
     if (card) {
       return (
-        <div className="card-selected w-20 h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer">
+        <div className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer">
           <div className={cn(
-            "text-lg font-semibold",
+            "text-sm font-semibold",
             isRedSuit(card.suit) ? "text-red-600" : "text-black"
           )}>
             {card.rank}
           </div>
           <div className={cn(
-            "text-xl",
+            "text-lg",
             isRedSuit(card.suit) ? "text-red-600" : "text-black"
           )}>
             {card.suit}
@@ -62,26 +58,26 @@ export function PlayerHand({
     return (
       <div 
         className={cn(
-          "card-slot w-20 h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer",
+          "card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer",
           index >= maxCards && "opacity-50"
         )}
-        onClick={index < maxCards ? onToggleSelector : undefined}
+        onClick={index < maxCards ? () => setIsModalOpen(true) : undefined}
       >
-        <Plus className="text-gray-400 w-6 h-6" />
+        <Plus className="text-gray-400 w-5 h-5" />
       </div>
     );
   };
 
   return (
-    <div className="bg-black bg-opacity-60 rounded-xl p-6 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-      <div className="text-center mb-4">
-        <h3 className="text-xl font-bold text-white mb-2">
-          <User className="inline text-yellow-500 mr-2" size={20} />
+    <div className="bg-black bg-opacity-60 rounded-xl p-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+      <div className="text-center mb-3">
+        <h3 className="text-lg font-bold text-white mb-2">
+          <User className="inline text-yellow-500 mr-2" size={18} />
           Player {playerNumber}
         </h3>
       </div>
 
-      <div className="flex justify-center gap-3 mb-6">
+      <div className="flex justify-center gap-2 mb-4">
         {[0, 1, 2, 3, 4].map(index => (
           <div key={index} className={cn(
             index >= maxCards && gameVariant === 'nlh' && "hidden"
@@ -92,41 +88,38 @@ export function PlayerHand({
       </div>
 
       <div className={cn(
-        "rounded-lg p-4 border",
+        "rounded-lg p-3 border",
         playerNumber === 1 ? "equity-glow bg-green-600 bg-opacity-20 border-green-500" : "bg-red-600 bg-opacity-20 border-red-500"
       )}>
         <div className="text-center">
           <div className={cn(
-            "text-3xl font-bold mb-2",
+            "text-2xl font-bold mb-1",
             playerNumber === 1 ? "text-green-400" : "text-red-400"
           )}>
             {equity.toFixed(1)}%
           </div>
-          <div className="text-lg text-white mb-1">Equity</div>
-          <div className="text-2xl font-bold text-yellow-500">
+          <div className="text-sm text-white mb-1">Equity</div>
+          <div className="text-lg font-bold text-yellow-500">
             {formatCurrency(moneyEquity)}
           </div>
-          <div className="text-sm text-gray-300">Expected Value</div>
+          <div className="text-xs text-gray-300">Expected Value</div>
         </div>
       </div>
 
-      <div className="mt-4 bg-black bg-opacity-40 rounded-lg p-3">
+      <div className="mt-3 bg-black bg-opacity-40 rounded-lg p-2">
         <div className="text-center">
-          <div className="text-sm text-gray-400 mb-1">Pot Odds</div>
-          <div className="text-lg font-semibold text-white">{potOdds}</div>
+          <div className="text-xs text-gray-400 mb-1">Pot Odds</div>
+          <div className="text-sm font-semibold text-white">{potOdds}</div>
         </div>
       </div>
 
-      {showSelector && (
-        <div className="mt-4">
-          <CardSelector
-            selectedCards={selectedCards}
-            onCardSelect={handleCardSelect}
-            onCardDeselect={onCardDeselect}
-            disabledCards={selectedCards}
-          />
-        </div>
-      )}
+      <CardSelectorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCardSelect={handleCardSelect}
+        selectedCards={selectedCards}
+        title={`Select Card for Player ${playerNumber}`}
+      />
     </div>
   );
 }

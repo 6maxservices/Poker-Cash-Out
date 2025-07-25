@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Card } from "@shared/schema";
-import { CardSelector } from "./card-selector";
+import { CardSelectorModal } from "./card-selector-modal";
 import { cn } from "@/lib/utils";
 import { isRedSuit } from "@/lib/poker-utils";
 import { Plus } from "lucide-react";
@@ -10,8 +11,6 @@ interface CommunityCardsProps {
   river?: Card;
   onCardSelect: (card: Card, position: 'flop' | 'turn' | 'river') => void;
   selectedCards: Card[];
-  showSelector: boolean;
-  onToggleSelector: () => void;
 }
 
 export function CommunityCards({
@@ -19,26 +18,22 @@ export function CommunityCards({
   turn,
   river,
   onCardSelect,
-  selectedCards,
-  showSelector,
-  onToggleSelector
+  selectedCards
 }: CommunityCardsProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState<'flop' | 'turn' | 'river'>('flop');
+
+  const handleCardSlotClick = (position: 'flop' | 'turn' | 'river') => {
+    setCurrentPosition(position);
+    setIsModalOpen(true);
+  };
+
   const handleCardSelect = (card: Card) => {
-    if (flop.length < 3) {
-      onCardSelect(card, 'flop');
-    } else if (!turn) {
-      onCardSelect(card, 'turn');
-    } else if (!river) {
-      onCardSelect(card, 'river');
-    }
-    onToggleSelector();
+    onCardSelect(card, currentPosition);
+    setIsModalOpen(false);
   };
 
-  const handleCardDeselect = (card: Card) => {
-    // Remove card logic would go here
-  };
-
-  const renderCard = (card: Card | undefined, label: string, onClick?: () => void) => {
+  const renderCard = (card: Card | undefined, label: string, position: 'flop' | 'turn' | 'river') => {
     if (card) {
       return (
         <div className="text-center">
@@ -66,7 +61,7 @@ export function CommunityCards({
         <div className="text-sm text-gray-400 mb-2">{label}</div>
         <div 
           className="card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer"
-          onClick={onClick}
+          onClick={() => handleCardSlotClick(position)}
         >
           <Plus className="text-gray-400 w-6 h-6" />
         </div>
@@ -75,13 +70,13 @@ export function CommunityCards({
   };
 
   return (
-    <div className="bg-black bg-opacity-60 rounded-xl p-6 mb-8 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-      <h2 className="text-xl font-bold text-white mb-4 text-center">
+    <div className="bg-black bg-opacity-60 rounded-xl p-4 mb-6 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+      <h2 className="text-lg font-bold text-white mb-3 text-center">
         <span className="text-yellow-500 mr-2">🃏</span>
         Community Cards <span className="text-sm text-gray-400 font-normal">(Optional for Preflop)</span>
       </h2>
       
-      <div className="flex justify-center gap-3 mb-6">
+      <div className="flex justify-center gap-3">
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">FLOP</div>
           <div className="flex gap-2">
@@ -105,7 +100,7 @@ export function CommunityCards({
                 ) : (
                   <div 
                     className="card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer"
-                    onClick={onToggleSelector}
+                    onClick={() => handleCardSlotClick('flop')}
                   >
                     <Plus className="text-gray-400 w-6 h-6" />
                   </div>
@@ -115,18 +110,17 @@ export function CommunityCards({
           </div>
         </div>
 
-        {renderCard(turn, "TURN", onToggleSelector)}
-        {renderCard(river, "RIVER", onToggleSelector)}
+        {renderCard(turn, "TURN", 'turn')}
+        {renderCard(river, "RIVER", 'river')}
       </div>
 
-      {showSelector && (
-        <CardSelector
-          selectedCards={selectedCards}
-          onCardSelect={handleCardSelect}
-          onCardDeselect={handleCardDeselect}
-          disabledCards={selectedCards}
-        />
-      )}
+      <CardSelectorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCardSelect={handleCardSelect}
+        selectedCards={selectedCards}
+        title={`Select ${currentPosition.charAt(0).toUpperCase() + currentPosition.slice(1)} Card`}
+      />
     </div>
   );
 }

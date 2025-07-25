@@ -23,9 +23,6 @@ export default function PokerCalculator() {
   const [player1Hand, setPlayer1Hand] = useState<Hand>({ cards: [] });
   const [player2Hand, setPlayer2Hand] = useState<Hand>({ cards: [] });
   const [equityResult, setEquityResult] = useState<EquityResult | null>(null);
-  const [showCommunitySelector, setShowCommunitySelector] = useState(false);
-  const [showPlayer1Selector, setShowPlayer1Selector] = useState(false);
-  const [showPlayer2Selector, setShowPlayer2Selector] = useState(false);
 
   const { toast } = useToast();
 
@@ -144,24 +141,24 @@ export default function PokerCalculator() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-          <Spade className="inline text-yellow-500 mr-3" size={32} />
+      <div className="text-center mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
+          <Spade className="inline text-yellow-500 mr-2" size={24} />
           Professional Poker Equity Calculator
-          <Heart className="inline text-red-500 ml-3" size={32} />
+          <Heart className="inline text-red-500 ml-2" size={24} />
         </h1>
-        <p className="text-gray-300 text-lg">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
+        <p className="text-gray-300 text-sm">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
       </div>
 
       {/* Game Settings */}
-      <div className="bg-black bg-opacity-60 rounded-xl p-4 mb-6 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Label className="text-white font-semibold">Game Variant:</Label>
+      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Label className="text-white font-semibold text-sm">Game:</Label>
             <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-              <SelectTrigger className="w-48 bg-black text-white border-yellow-500">
+              <SelectTrigger className="w-40 bg-black text-white border-yellow-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -171,15 +168,15 @@ export default function PokerCalculator() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-4">
-            <Label className="text-white font-semibold">Pot Amount:</Label>
+          <div className="flex items-center gap-3">
+            <Label className="text-white font-semibold text-sm">Pot:</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-500 font-bold">$</span>
+              <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 font-bold text-sm">$</span>
               <Input
                 type="number"
                 value={potAmount}
                 onChange={(e) => setPotAmount(Number(e.target.value))}
-                className="w-32 pl-8 bg-black text-white border-yellow-500 focus:ring-yellow-500"
+                className="w-28 pl-6 bg-black text-white border-yellow-500 focus:ring-yellow-500 h-8"
                 min="0"
                 step="0.01"
               />
@@ -195,12 +192,10 @@ export default function PokerCalculator() {
         river={communityCards.river}
         onCardSelect={handleCommunityCardSelect}
         selectedCards={getAllSelectedCards()}
-        showSelector={showCommunitySelector}
-        onToggleSelector={() => setShowCommunitySelector(!showCommunitySelector)}
       />
 
       {/* Players */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <PlayerHand
           playerNumber={1}
           cards={player1Hand.cards}
@@ -208,10 +203,7 @@ export default function PokerCalculator() {
           moneyEquity={equityResult?.player1MoneyEquity || 0}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer1CardSelect}
-          onCardDeselect={handleCardDeselect}
           selectedCards={getAllSelectedCards()}
-          showSelector={showPlayer1Selector}
-          onToggleSelector={() => setShowPlayer1Selector(!showPlayer1Selector)}
         />
 
         <PlayerHand
@@ -221,10 +213,7 @@ export default function PokerCalculator() {
           moneyEquity={equityResult?.player2MoneyEquity || 0}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer2CardSelect}
-          onCardDeselect={handleCardDeselect}
           selectedCards={getAllSelectedCards()}
-          showSelector={showPlayer2Selector}
-          onToggleSelector={() => setShowPlayer2Selector(!showPlayer2Selector)}
         />
       </div>
 
@@ -238,8 +227,8 @@ export default function PokerCalculator() {
       />
 
       {/* Footer */}
-      <div className="text-center mt-6 text-gray-500">
-        <p className="text-sm">© 2024 Professional Poker Tools • Monte Carlo Simulation Engine</p>
+      <div className="text-center mt-4 text-gray-500">
+        <p className="text-xs">© 2024 Professional Poker Tools • Monte Carlo Simulation Engine</p>
       </div>
     </div>
   );
