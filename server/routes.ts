@@ -15,7 +15,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         calculationData.communityCards,
         calculationData.player1Hand,
         calculationData.player2Hand,
-        calculationData.potAmount
+        calculationData.potAmount,
+        20000,
+        calculationData.burnedCards || []
       );
 
       // Optionally save the calculation

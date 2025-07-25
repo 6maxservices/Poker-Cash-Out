@@ -38,6 +38,7 @@ export const equityCalculationSchema = z.object({
   player1Hand: handSchema,
   player2Hand: handSchema,
   potAmount: z.number().min(0),
+  burnedCards: z.array(cardSchema).default([]),
 });
 
 export type EquityCalculation = z.infer<typeof equityCalculationSchema>;

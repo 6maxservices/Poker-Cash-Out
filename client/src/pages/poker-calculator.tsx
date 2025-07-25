@@ -4,6 +4,7 @@ import { Card, GameVariant, CommunityCards, Hand, EquityResult } from "@shared/s
 import { CommunityCards as CommunityCardsComponent } from "@/components/community-cards";
 import { PlayerHand } from "@/components/player-hand";
 import { EquityDisplay } from "@/components/equity-display";
+import { BurnedCards } from "@/components/burned-cards";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +23,7 @@ export default function PokerCalculator() {
   });
   const [player1Hand, setPlayer1Hand] = useState<Hand>({ cards: [] });
   const [player2Hand, setPlayer2Hand] = useState<Hand>({ cards: [] });
+  const [burnedCards, setBurnedCards] = useState<Card[]>([]);
   const [equityResult, setEquityResult] = useState<EquityResult | null>(null);
 
   const { toast } = useToast();
@@ -49,9 +51,10 @@ export default function PokerCalculator() {
       ...(communityCards.turn ? [communityCards.turn] : []),
       ...(communityCards.river ? [communityCards.river] : []),
       ...player1Hand.cards,
-      ...player2Hand.cards
+      ...player2Hand.cards,
+      ...burnedCards
     ];
-  }, [communityCards, player1Hand, player2Hand]);
+  }, [communityCards, player1Hand, player2Hand, burnedCards]);
 
   const canCalculate = useCallback((): boolean => {
     const minCardsPerPlayer = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
@@ -75,6 +78,7 @@ export default function PokerCalculator() {
       player1Hand,
       player2Hand,
       potAmount,
+      burnedCards,
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, canCalculate, toast]);
 
@@ -108,6 +112,14 @@ export default function PokerCalculator() {
       }
       return prev;
     });
+  };
+
+  const handleBurnedCardAdd = (card: Card) => {
+    setBurnedCards(prev => [...prev, card]);
+  };
+
+  const handleBurnedCardRemove = (index: number) => {
+    setBurnedCards(prev => prev.filter((_, i) => i !== index));
   };
 
   const handlePlayer1CardSelect = (card: Card) => {
@@ -155,6 +167,7 @@ export default function PokerCalculator() {
     setCommunityCards({ flop: [], turn: undefined, river: undefined });
     setPlayer1Hand({ cards: [] });
     setPlayer2Hand({ cards: [] });
+    setBurnedCards([]);
     setEquityResult(null);
   };
 
@@ -217,6 +230,14 @@ export default function PokerCalculator() {
         river={communityCards.river}
         onCardSelect={handleCommunityCardSelect}
         onCardDeselect={handleCommunityCardDeselect}
+        selectedCards={getAllSelectedCards()}
+      />
+
+      {/* Burned Cards */}
+      <BurnedCards
+        burnedCards={burnedCards}
+        onCardAdd={handleBurnedCardAdd}
+        onCardRemove={handleBurnedCardRemove}
         selectedCards={getAllSelectedCards()}
       />
 

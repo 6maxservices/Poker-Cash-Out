@@ -7,7 +7,8 @@ export function calculateEquity(
   player1Hand: Hand,
   player2Hand: Hand,
   potAmount: number,
-  iterations: number = 20000
+  iterations: number = 20000,
+  burnedCards: Card[] = []
 ): EquityResult {
   const startTime = Date.now();
   
@@ -26,6 +27,9 @@ export function calculateEquity(
   // Add player hands to known cards
   player1Hand.cards.forEach(card => knownCards.add(cardToString(card)));
   player2Hand.cards.forEach(card => knownCards.add(cardToString(card)));
+
+  // Add burned cards to known cards
+  burnedCards.forEach(card => knownCards.add(cardToString(card)));
 
   const availableDeck = createDeck().filter(card => !knownCards.has(cardToString(card)));
 
