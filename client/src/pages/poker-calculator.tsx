@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { tvApiClient } from "@/lib/tv-api";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -77,6 +78,26 @@ export default function PokerCalculator() {
     },
     onSuccess: (result) => {
       setEquityResult(result);
+      // Broadcast to TV displays
+      try {
+        tvApiClient.updateGameState({
+          potAmount,
+          gameVariant,
+          handId,
+          player1Equity: result.player1Equity,
+          player2Equity: result.player2Equity,
+          player1MoneyEquity: result.player1MoneyEquity,
+          player2MoneyEquity: result.player2MoneyEquity,
+          communityCards: {
+            flop: communityCards.flop,
+            turn: communityCards.turn,
+            river: communityCards.river,
+          }
+        });
+        console.log('TV Broadcast sent successfully:');
+      } catch (tvError) {
+        console.error('Failed to broadcast to TV:', tvError);
+      }
     },
     onError: (error) => {
       toast({
@@ -130,7 +151,7 @@ export default function PokerCalculator() {
       potAmount,
       burnedCards,
     });
-  }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast]);
+  }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast, calculateEquityMutation]);
 
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
