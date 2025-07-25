@@ -39,6 +39,15 @@ export default function PokerCalculator() {
 
   // Broadcast data to TV display
   const broadcastToTV = useCallback(() => {
+    console.log('PokerCalculator: broadcastToTV called');
+    console.log('PokerCalculator: Current data:', {
+      gameVariant,
+      potAmount,
+      player1Cards: player1Hand.cards.length,
+      player2Cards: player2Hand.cards.length,
+      equityResult: !!equityResult,
+    });
+    
     const player1MoneyEquity = equityResult?.player1MoneyEquity || 0;
     const player2MoneyEquity = equityResult?.player2MoneyEquity || 0;
     
@@ -71,7 +80,17 @@ export default function PokerCalculator() {
 
   // Auto-broadcast when key data changes
   useEffect(() => {
-    console.log('PokerCalculator: Auto-broadcasting triggered');
+    console.log('PokerCalculator: Auto-broadcasting useEffect triggered');
+    console.log('PokerCalculator: Dependencies changed:', {
+      gameVariant,
+      potAmount,
+      player1CardsLength: player1Hand.cards.length,
+      player2CardsLength: player2Hand.cards.length,
+      hasEquityResult: !!equityResult,
+      feePercentage,
+      player1CashoutStatus,
+      player2CashoutStatus
+    });
     broadcastToTV();
   }, [broadcastToTV]);
 
