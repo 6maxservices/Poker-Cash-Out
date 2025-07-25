@@ -10,6 +10,7 @@ interface CommunityCardsProps {
   turn?: Card;
   river?: Card;
   onCardSelect: (card: Card, position: 'flop' | 'turn' | 'river') => void;
+  onCardDeselect: (position: 'flop' | 'turn' | 'river', index?: number) => void;
   selectedCards: Card[];
 }
 
@@ -18,6 +19,7 @@ export function CommunityCards({
   turn,
   river,
   onCardSelect,
+  onCardDeselect,
   selectedCards
 }: CommunityCardsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,7 +40,11 @@ export function CommunityCards({
       return (
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">{label}</div>
-          <div className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer">
+          <div 
+            className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+            onClick={() => onCardDeselect(position)}
+            title="Click to deselect card"
+          >
             <div className={cn(
               "text-lg font-semibold",
               isRedSuit(card.suit) ? "text-red-600" : "text-black"
@@ -51,6 +57,7 @@ export function CommunityCards({
             )}>
               {card.suit}
             </div>
+            <div className="absolute inset-0 bg-red-500 bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
           </div>
         </div>
       );
@@ -83,7 +90,11 @@ export function CommunityCards({
             {[0, 1, 2].map(index => (
               <div key={index}>
                 {flop[index] ? (
-                  <div className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center">
+                  <div 
+                    className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+                    onClick={() => onCardDeselect('flop', index)}
+                    title="Click to deselect card"
+                  >
                     <div className={cn(
                       "text-lg font-semibold",
                       isRedSuit(flop[index].suit) ? "text-red-600" : "text-black"
@@ -96,6 +107,7 @@ export function CommunityCards({
                     )}>
                       {flop[index].suit}
                     </div>
+                    <div className="absolute inset-0 bg-red-500 bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
                   </div>
                 ) : (
                   <div 

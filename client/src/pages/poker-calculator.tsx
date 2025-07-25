@@ -97,6 +97,19 @@ export default function PokerCalculator() {
     });
   };
 
+  const handleCommunityCardDeselect = (position: 'flop' | 'turn' | 'river', index?: number) => {
+    setCommunityCards(prev => {
+      if (position === 'flop' && typeof index === 'number') {
+        return { ...prev, flop: prev.flop.filter((_, i) => i !== index) };
+      } else if (position === 'turn') {
+        return { ...prev, turn: undefined };
+      } else if (position === 'river') {
+        return { ...prev, river: undefined };
+      }
+      return prev;
+    });
+  };
+
   const handlePlayer1CardSelect = (card: Card) => {
     const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
     if (player1Hand.cards.length < maxCards) {
@@ -104,11 +117,23 @@ export default function PokerCalculator() {
     }
   };
 
+  const handlePlayer1CardDeselect = (index: number) => {
+    setPlayer1Hand(prev => ({
+      cards: prev.cards.filter((_, i) => i !== index)
+    }));
+  };
+
   const handlePlayer2CardSelect = (card: Card) => {
     const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
     if (player2Hand.cards.length < maxCards) {
       setPlayer2Hand(prev => ({ cards: [...prev.cards, card] }));
     }
+  };
+
+  const handlePlayer2CardDeselect = (index: number) => {
+    setPlayer2Hand(prev => ({
+      cards: prev.cards.filter((_, i) => i !== index)
+    }));
   };
 
   const handleCardDeselect = (card: Card) => {
@@ -191,6 +216,7 @@ export default function PokerCalculator() {
         turn={communityCards.turn}
         river={communityCards.river}
         onCardSelect={handleCommunityCardSelect}
+        onCardDeselect={handleCommunityCardDeselect}
         selectedCards={getAllSelectedCards()}
       />
 
@@ -203,6 +229,7 @@ export default function PokerCalculator() {
           moneyEquity={equityResult?.player1MoneyEquity || 0}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer1CardSelect}
+          onCardDeselect={handlePlayer1CardDeselect}
           selectedCards={getAllSelectedCards()}
         />
 
@@ -213,6 +240,7 @@ export default function PokerCalculator() {
           moneyEquity={equityResult?.player2MoneyEquity || 0}
           gameVariant={gameVariant}
           onCardSelect={handlePlayer2CardSelect}
+          onCardDeselect={handlePlayer2CardDeselect}
           selectedCards={getAllSelectedCards()}
         />
       </div>

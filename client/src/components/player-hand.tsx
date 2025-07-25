@@ -12,6 +12,7 @@ interface PlayerHandProps {
   moneyEquity: number;
   gameVariant: GameVariant;
   onCardSelect: (card: Card) => void;
+  onCardDeselect: (index: number) => void;
   selectedCards: Card[];
 }
 
@@ -22,6 +23,7 @@ export function PlayerHand({
   moneyEquity,
   gameVariant,
   onCardSelect,
+  onCardDeselect,
   selectedCards
 }: PlayerHandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,7 +40,11 @@ export function PlayerHand({
     
     if (card) {
       return (
-        <div className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer">
+        <div 
+          className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+          onClick={() => onCardDeselect(index)}
+          title="Click to deselect card"
+        >
           <div className={cn(
             "text-sm font-semibold",
             isRedSuit(card.suit) ? "text-red-600" : "text-black"
@@ -51,6 +57,7 @@ export function PlayerHand({
           )}>
             {card.suit}
           </div>
+          <div className="absolute inset-0 bg-red-500 bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
         </div>
       );
     }

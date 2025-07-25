@@ -37,6 +37,7 @@ export function CardSelectorModal({
           <DialogTitle className="text-xl font-bold text-white text-center">
             {title}
           </DialogTitle>
+          <div className="sr-only">Select a card from the available options below</div>
           <Button
             onClick={onClose}
             variant="ghost"
