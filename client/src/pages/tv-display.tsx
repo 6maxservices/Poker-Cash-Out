@@ -453,13 +453,110 @@ export default function TVDisplay() {
           </div>
         </div>
       ) : (
-        <Card className="p-12 bg-gray-800/90 backdrop-blur border-gray-700">
-          <div className="text-center text-gray-400">
-            <Monitor className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <p className="text-xl">Waiting for poker data...</p>
-            <p className="text-sm mt-2">Start a calculation to see live updates</p>
+        <div className="space-y-6">
+          {/* Placeholder Pot Display */}
+          <Card className="p-6 bg-gray-800/90 backdrop-blur border-gray-700">
+            <div className="text-center">
+              <p className="text-gray-300 text-lg mb-2">Current Pot</p>
+              <p className="text-5xl font-bold text-gray-500 mb-3">
+                $--,---
+              </p>
+              <Badge variant="secondary" className="bg-gray-700 text-gray-400">
+                WAITING...
+              </Badge>
+            </div>
+          </Card>
+
+          {/* Placeholder Community Cards */}
+          <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-white mb-3">Community Cards</h3>
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((index) => (
+                  <div key={index} className="w-12 h-16 bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-600 border-dashed">
+                    <div className="text-gray-500 text-xs">?</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          {/* Placeholder Players */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Player 1 Placeholder */}
+            <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-semibold text-white">Player 1</h3>
+                
+                {/* Placeholder Hand Cards */}
+                <div className="flex justify-center gap-2 mb-3">
+                  {[1, 2].map((index) => (
+                    <div key={index} className="w-12 h-16 bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-600 border-dashed">
+                      <div className="text-gray-500 text-xs">?</div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Placeholder Equity */}
+                <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-3">
+                  <p className="text-2xl font-bold text-gray-500 mb-1">
+                    --.-%
+                  </p>
+                  <p className="text-sm text-gray-400">Equity</p>
+                </div>
+                
+                {/* Placeholder Cashout Amount */}
+                <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">CASHOUT AMOUNT</p>
+                  <p className="text-3xl font-bold text-gray-500">
+                    $--,---
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Player 2 Placeholder */}
+            <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-semibold text-white">Player 2</h3>
+                
+                {/* Placeholder Hand Cards */}
+                <div className="flex justify-center gap-2 mb-3">
+                  {[1, 2].map((index) => (
+                    <div key={index} className="w-12 h-16 bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-600 border-dashed">
+                      <div className="text-gray-500 text-xs">?</div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Placeholder Equity */}
+                <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-3">
+                  <p className="text-2xl font-bold text-gray-500 mb-1">
+                    --.-%
+                  </p>
+                  <p className="text-sm text-gray-400">Equity</p>
+                </div>
+                
+                {/* Placeholder Cashout Amount */}
+                <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">CASHOUT AMOUNT</p>
+                  <p className="text-3xl font-bold text-gray-500">
+                    $--,---
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
+
+          {/* Placeholder Status */}
+          <Card className="p-8 bg-gray-800/90 backdrop-blur border-gray-700">
+            <div className="text-center text-gray-400">
+              <Monitor className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-lg font-semibold mb-2">Waiting for poker data...</p>
+              <p className="text-sm">Connect from the poker calculator to see live updates</p>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

@@ -157,7 +157,47 @@ export default function PokerCalculator() {
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast, calculateEquityMutation]);
 
-  // Send TV broadcast whenever pot amount changes
+  // Auto-calculate equity whenever cards change
+  useEffect(() => {
+    if (canCalculate()) {
+      console.log('Auto-calculating equity due to card changes...');
+      calculateEquityMutation.mutate({
+        gameVariant,
+        communityCards,
+        player1Hand,
+        player2Hand,
+        potAmount,
+        burnedCards,
+      });
+    } else {
+      // Send broadcast even when we can't calculate to update cards on TV
+      try {
+        tvApiClient.updateGameState({
+          potAmount,
+          gameVariant,
+          handId,
+          player1Equity: null,
+          player2Equity: null,
+          player1MoneyEquity: null,
+          player2MoneyEquity: null,
+          player1Hand: player1Hand.cards,
+          player2Hand: player2Hand.cards,
+          player1CashoutStatus: player1CashoutStatus,
+          player2CashoutStatus: player2CashoutStatus,
+          communityCards: {
+            flop: communityCards.flop,
+            turn: communityCards.turn,
+            river: communityCards.river,
+          }
+        });
+        console.log('TV Broadcast sent for card update (no equity)');
+      } catch (tvError) {
+        console.error('Failed to broadcast card update to TV:', tvError);
+      }
+    }
+  }, [gameVariant, communityCards, player1Hand.cards, player2Hand.cards, burnedCards, potAmount]);
+
+  // Send TV broadcast whenever cashout status changes
   useEffect(() => {
     try {
       tvApiClient.updateGameState({
@@ -178,11 +218,11 @@ export default function PokerCalculator() {
           river: communityCards.river,
         }
       });
-      console.log('TV Broadcast sent for pot update:', potAmount);
+      console.log('TV Broadcast sent for cashout status update');
     } catch (tvError) {
-      console.error('Failed to broadcast pot update to TV:', tvError);
+      console.error('Failed to broadcast cashout status to TV:', tvError);
     }
-  }, [potAmount]);
+  }, [player1CashoutStatus, player2CashoutStatus]);
 
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
@@ -595,21 +635,28 @@ export default function PokerCalculator() {
         )}
       </div>
 
-      {/* Calculation Controls */}
+      {/* Calculation Status */}
       <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
         <div className="text-center mb-3">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className={`w-3 h-3 rounded-full ${calculateEquityMutation.isPending ? 'bg-yellow-500 animate-pulse' : canCalculate() ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+            <span className="text-white font-medium">
+              {calculateEquityMutation.isPending ? 'Calculating Live...' : canCalculate() ? 'Live Calculation Active' : 'Waiting for Cards...'}
+            </span>
+          </div>
           <Button
             onClick={handleCalculateEquity}
             disabled={!canCalculate() || calculateEquityMutation.isPending}
-            size="lg"
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-sm px-8 py-3"
+            size="sm"
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
           >
             <Calculator className="mr-2 h-4 w-4" />
-            {calculateEquityMutation.isPending ? 'Calculating...' : 'Calculate Equity'}
+            Recalculate Now
           </Button>
           {!canCalculate() && (
             <p className="text-gray-400 text-xs mt-2">
-              Select all required cards for both players to calculate
+              Select all required cards for both players for live calculations
             </p>
           )}
         </div>
