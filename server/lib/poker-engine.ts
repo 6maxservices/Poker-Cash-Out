@@ -148,7 +148,7 @@ function countSuits(suits: Suit[]): Record<string, number> {
 
 function checkStraight(ranks: Rank[]): boolean {
   const values = ranks.map(r => RANK_VALUES[r]).sort((a, b) => b - a);
-  const uniqueValues = [...new Set(values)];
+  const uniqueValues = Array.from(new Set(values));
   
   if (uniqueValues.length < 5) return false;
   

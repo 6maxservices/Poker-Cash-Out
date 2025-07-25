@@ -1,5 +1,6 @@
 import { Card, GameVariant, Hand, CommunityCards, EquityResult } from "@shared/schema";
-import { createDeck, evaluateHand, cardToString } from "./poker-engine";
+import { createDeck, cardToString } from "./poker-engine";
+import { getBestHand, PokerStoveEvaluator } from "./pokerstove-engine";
 
 export function calculateEquity(
   gameVariant: GameVariant,
@@ -59,12 +60,12 @@ export function calculateEquity(
     const player1Cards = getPlayerCards(player1Hand, gameVariant, completeCommunity);
     const player2Cards = getPlayerCards(player2Hand, gameVariant, completeCommunity);
 
-    // Evaluate hands
-    const player1Eval = evaluateHand(player1Cards);
-    const player2Eval = evaluateHand(player2Cards);
+    // Evaluate hands using PokerStove-compatible evaluator
+    const player1Eval = getBestHand(player1Cards);
+    const player2Eval = getBestHand(player2Cards);
 
-    // Compare hands
-    const comparison = compareHandEvaluations(player1Eval, player2Eval);
+    // Compare hands using PokerStove comparison
+    const comparison = PokerStoveEvaluator.compareHands(player1Eval, player2Eval);
     if (comparison > 0) {
       player1Wins++;
     } else if (comparison < 0) {
@@ -138,22 +139,8 @@ function getPlayerCards(hand: Hand, gameVariant: GameVariant, board: Card[]): Ca
   }
 }
 
+// Legacy function - now using PokerStove comparison
 function compareHandEvaluations(eval1: any, eval2: any): number {
-  if (eval1.rank !== eval2.rank) {
-    return eval1.rank - eval2.rank;
-  }
-  
-  if (eval1.value !== eval2.value) {
-    return eval1.value - eval2.value;
-  }
-  
-  for (let i = 0; i < Math.max(eval1.kickers.length, eval2.kickers.length); i++) {
-    const kicker1 = eval1.kickers[i] || 0;
-    const kicker2 = eval2.kickers[i] || 0;
-    if (kicker1 !== kicker2) {
-      return kicker1 - kicker2;
-    }
-  }
-  
+  // This function is no longer used - replaced by PokerStove comparison
   return 0;
 }

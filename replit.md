@@ -42,8 +42,9 @@ The application follows a modern full-stack TypeScript architecture with clear s
 
 ### Poker Engine
 - **Monte Carlo Simulation**: Custom implementation for equity calculations
-- **Hand Evaluation**: Poker hand ranking and comparison logic
+- **Hand Evaluation**: PokerStove-compatible hand evaluation for maximum accuracy
 - **Game Variants**: Support for NLH, PLO4, and PLO5
+- **PokerStove Integration**: Implemented PokerStove algorithms for professional-grade calculations
 
 ### UI Components
 - **Card Selector**: Interactive card selection with visual feedback
