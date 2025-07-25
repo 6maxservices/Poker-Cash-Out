@@ -195,11 +195,13 @@ export default function TVDisplay() {
 
   // Subscribe to real-time updates
   useEffect(() => {
+    console.log('TV Display: Setting up subscription');
     const unsubscribe = tvBroadcaster.subscribe((data: TVBroadcastData) => {
       console.log('TV Display received update:', data);
       setGameData(data);
     });
 
+    console.log('TV Display: Subscription set up, unsubscribe function:', unsubscribe);
     return unsubscribe;
   }, []);
 

@@ -71,6 +71,7 @@ export default function PokerCalculator() {
 
   // Auto-broadcast when key data changes
   useEffect(() => {
+    console.log('PokerCalculator: Auto-broadcasting triggered');
     broadcastToTV();
   }, [broadcastToTV]);
 
