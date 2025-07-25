@@ -260,14 +260,10 @@ export function runMonteCarloSimulation(
     }
   }
   
-  console.log(`Results: P1 wins: ${player1Wins}, P2 wins: ${player2Wins}, Ties: ${ties}`);
-  console.log(`Percentages: P1: ${(player1Wins / iterations * 100).toFixed(1)}%, P2: ${(player2Wins / iterations * 100).toFixed(1)}%, Ties: ${(ties / iterations * 100).toFixed(1)}%`);
-  
-  if (burnedCards.length > 0) {
-    // Count remaining relevant cards in deck for analysis
-    const relevantCards = ['K', 'A']; // Focus on high cards for analysis
-    const remainingRelevant = availableDeck.filter(card => relevantCards.includes(card.rank));
-    console.log(`Burned cards effect: Available ${remainingRelevant.filter(c => c.rank === 'K').length} kings remaining in deck`);
+  // Optional debug logging for development
+  if (process.env.NODE_ENV === 'development' && burnedCards.length > 0) {
+    console.log(`Burned cards: ${burnedCards.map(c => c.rank + c.suit).join(', ')}`);
+    console.log(`Results with burned cards: P1: ${(player1Wins / iterations * 100).toFixed(1)}%, P2: ${(player2Wins / iterations * 100).toFixed(1)}%`);
   }
   
   return { player1Wins, player2Wins, ties };

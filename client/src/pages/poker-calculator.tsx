@@ -82,12 +82,19 @@ export default function PokerCalculator() {
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, canCalculate, toast]);
 
-  // Auto-calculate when hands are complete
+  // Auto-calculate when hands are complete, but NOT when only burned cards change
   useEffect(() => {
     if (canCalculate()) {
       handleCalculateEquity();
     }
   }, [canCalculate, handleCalculateEquity]);
+
+  // Auto-calculate when burned cards change (after initial hand completion)
+  useEffect(() => {
+    if (canCalculate() && equityResult) { // Only if we already have a result
+      handleCalculateEquity();
+    }
+  }, [burnedCards]);
 
   const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
     setCommunityCards(prev => {
@@ -273,6 +280,7 @@ export default function PokerCalculator() {
         onRecalculate={handleCalculateEquity}
         onSave={handleSave}
         onReset={handleReset}
+        burnedCardsCount={burnedCards.length}
       />
 
       {/* Footer */}

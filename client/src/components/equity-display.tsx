@@ -8,6 +8,7 @@ interface EquityDisplayProps {
   onRecalculate: () => void;
   onSave: () => void;
   onReset: () => void;
+  burnedCardsCount?: number;
 }
 
 export function EquityDisplay({ 
@@ -15,7 +16,8 @@ export function EquityDisplay({
   isCalculating, 
   onRecalculate, 
   onSave, 
-  onReset 
+  onReset,
+  burnedCardsCount = 0
 }: EquityDisplayProps) {
   return (
     <div className="bg-black bg-opacity-60 rounded-xl p-3 backdrop-blur-sm border border-yellow-500 border-opacity-30">
@@ -31,6 +33,11 @@ export function EquityDisplay({
             <div className="text-gray-400 text-xs">
               <span>{result.iterations.toLocaleString()}</span> iterations • 
               <span className="ml-1">{result.calculationTime.toFixed(3)}s</span>
+              {burnedCardsCount > 0 && (
+                <span className="ml-2 text-orange-400">
+                  • {burnedCardsCount} burned
+                </span>
+              )}
               {result.tiePercentage > 0 && (
                 <span className="ml-2 text-orange-400">
                   • Ties: {result.tiePercentage.toFixed(1)}%
