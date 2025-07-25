@@ -20,6 +20,7 @@ const TV_BROADCAST_KEY = 'poker-tv-broadcast';
 export class TVBroadcaster {
   private static instance: TVBroadcaster;
   private listeners: ((data: TVBroadcastData) => void)[] = [];
+  private lastData: TVBroadcastData | null = null;
 
   private constructor() {
     // Listen for storage events from other tabs
@@ -27,6 +28,8 @@ export class TVBroadcaster {
       if (e.key === TV_BROADCAST_KEY && e.newValue) {
         try {
           const data = JSON.parse(e.newValue) as TVBroadcastData;
+          console.log('TVBroadcaster: Received storage event:', data);
+          this.lastData = data;
           this.notifyListeners(data);
         } catch (error) {
           console.error('Failed to parse TV broadcast data:', error);
@@ -36,6 +39,8 @@ export class TVBroadcaster {
 
     // Listen for events within the same tab
     window.addEventListener('tv-broadcast', ((e: CustomEvent<TVBroadcastData>) => {
+      console.log('TVBroadcaster: Received custom event:', e.detail);
+      this.lastData = e.detail;
       this.notifyListeners(e.detail);
     }) as EventListener);
   }
@@ -49,15 +54,23 @@ export class TVBroadcaster {
 
   broadcast(data: TVBroadcastData) {
     data.timestamp = Date.now();
+    console.log('TVBroadcaster: Broadcasting data:', data);
     
     // Store in localStorage for cross-tab communication
     localStorage.setItem(TV_BROADCAST_KEY, JSON.stringify(data));
     
-    // Dispatch custom event for same-tab communication
-    window.dispatchEvent(new CustomEvent('tv-broadcast', { detail: data }));
+    // Always dispatch custom event for same-tab communication
+    // This ensures updates work even when both calculator and TV are in same tab/window
+    const event = new CustomEvent('tv-broadcast', { detail: data });
+    window.dispatchEvent(event);
+    
+    // Force immediate notification to current listeners
+    this.lastData = data;
+    this.notifyListeners(data);
   }
 
   subscribe(callback: (data: TVBroadcastData) => void) {
+    console.log('TVBroadcaster: New subscriber added, total:', this.listeners.length + 1);
     this.listeners.push(callback);
     
     // Send current data if available
@@ -65,6 +78,7 @@ export class TVBroadcaster {
     if (stored) {
       try {
         const data = JSON.parse(stored) as TVBroadcastData;
+        console.log('TVBroadcaster: Sending stored data to new subscriber:', data);
         callback(data);
       } catch (error) {
         console.error('Failed to parse stored TV broadcast data:', error);
@@ -73,15 +87,17 @@ export class TVBroadcaster {
 
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback);
+      console.log('TVBroadcaster: Subscriber removed, total:', this.listeners.length);
     };
   }
 
   private notifyListeners(data: TVBroadcastData) {
-    this.listeners.forEach(listener => {
+    console.log(`TVBroadcaster: Notifying ${this.listeners.length} listeners with data:`, data);
+    this.listeners.forEach((listener, index) => {
       try {
         listener(data);
       } catch (error) {
-        console.error('TV broadcast listener error:', error);
+        console.error(`TV broadcast listener ${index} error:`, error);
       }
     });
   }
