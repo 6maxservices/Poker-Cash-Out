@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Spade, Heart, Calculator, DollarSign, Edit } from "lucide-react";
+import { Spade, Heart, Calculator, DollarSign, Edit, Plus, Check } from "lucide-react";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -28,6 +28,9 @@ export default function PokerCalculator() {
   const [burnedCards, setBurnedCards] = useState<Card[]>([]);
   const [equityResult, setEquityResult] = useState<EquityResult | null>(null);
   const [isPotModalOpen, setIsPotModalOpen] = useState(false);
+  const [handId, setHandId] = useState<string | null>(null);
+  const [player1CashoutStatus, setPlayer1CashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
+  const [player2CashoutStatus, setPlayer2CashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
 
   const { toast } = useToast();
 
@@ -179,19 +182,112 @@ export default function PokerCalculator() {
     }));
   };
 
+  // Check if any player has approved cashout
+  const hasApprovedCashout = (): boolean => {
+    return player1CashoutStatus === 'approved' || player2CashoutStatus === 'approved';
+  };
+
+  // Handle cashout status changes from player components
+  const handleCashoutStatusChange = (playerNumber: 1 | 2, status: 'pending' | 'approved' | 'rejected' | null) => {
+    if (playerNumber === 1) {
+      setPlayer1CashoutStatus(status);
+    } else {
+      setPlayer2CashoutStatus(status);
+    }
+  };
+
+  // Check if all community cards are filled
+  const areAllCommunityCardsFilled = (): boolean => {
+    return communityCards.flop.length === 3 && 
+           communityCards.turn !== undefined && 
+           communityCards.river !== undefined;
+  };
+
+  // Check if hand can be finished
+  const canFinishHand = (): boolean => {
+    const hasApproved = hasApprovedCashout();
+    const allCardsFilled = areAllCommunityCardsFilled();
+    
+    if (hasApproved && !allCardsFilled) {
+      return false; // Cannot finish if cashout approved but cards not filled
+    }
+    
+    return player1Hand.cards.length > 0 || player2Hand.cards.length > 0 || 
+           communityCards.flop.length > 0 || burnedCards.length > 0;
+  };
+
+  const handleNewHand = () => {
+    setCommunityCards({ flop: [], turn: undefined, river: undefined });
+    setPlayer1Hand({ cards: [] });
+    setPlayer2Hand({ cards: [] });
+    setBurnedCards([]);
+    setEquityResult(null);
+    setPlayer1CashoutStatus(null);
+    setPlayer2CashoutStatus(null);
+    setHandId(`hand_${Date.now()}`);
+    
+    toast({
+      title: "New Hand Started",
+      description: "Ready to deal a new hand",
+    });
+  };
+
+  const handleFinishHand = () => {
+    if (!canFinishHand()) {
+      if (hasApprovedCashout() && !areAllCommunityCardsFilled()) {
+        toast({
+          title: "Cannot Finish Hand",
+          description: "All 5 community cards must be filled when a cashout is approved",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Cannot Finish Hand",
+        description: "No cards have been dealt in this hand",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Calculate final equity if not already done
+    if (!equityResult && canCalculate()) {
+      handleCalculateEquity();
+    }
+
+    // Save hand to database/storage
+    const handData = {
+      handId: handId || `hand_${Date.now()}`,
+      gameVariant,
+      potAmount,
+      feePercentage,
+      communityCards,
+      player1Hand,
+      player2Hand,
+      burnedCards,
+      equityResult,
+      timestamp: new Date().toISOString(),
+      status: 'completed'
+    };
+
+    console.log('Saving completed hand:', handData);
+    
+    toast({
+      title: "Hand Finished & Saved",
+      description: "Hand has been completed and saved to records",
+    });
+
+    // Reset for next hand
+    handleNewHand();
+  };
+
   const handleReset = () => {
     setCommunityCards({ flop: [], turn: undefined, river: undefined });
     setPlayer1Hand({ cards: [] });
     setPlayer2Hand({ cards: [] });
     setBurnedCards([]);
     setEquityResult(null);
-  };
-
-  const handleSave = () => {
-    toast({
-      title: "Hand Saved",
-      description: "Hand configuration has been saved successfully",
-    });
   };
 
   return (
@@ -275,6 +371,7 @@ export default function PokerCalculator() {
           onCardSelect={handlePlayer1CardSelect}
           onCardDeselect={handlePlayer1CardDeselect}
           selectedCards={getAllSelectedCards()}
+          onCashoutStatusChange={handleCashoutStatusChange}
         />
 
         <PlayerHand
@@ -287,6 +384,7 @@ export default function PokerCalculator() {
           onCardSelect={handlePlayer2CardSelect}
           onCardDeselect={handlePlayer2CardDeselect}
           selectedCards={getAllSelectedCards()}
+          onCashoutStatusChange={handleCashoutStatusChange}
         />
       </div>
 
@@ -307,6 +405,54 @@ export default function PokerCalculator() {
         onCardRemove={handleBurnedCardRemove}
         selectedCards={getAllSelectedCards()}
       />
+
+      {/* Hand Management Controls */}
+      <div className="bg-black bg-opacity-60 rounded-xl p-4 mb-4 backdrop-blur-sm border border-red-500 border-opacity-50">
+        <h3 className="text-white font-bold text-lg mb-3 text-center">
+          <span className="text-red-500 mr-2">🎰</span>
+          Dealer Controls
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Button
+            onClick={handleNewHand}
+            size="lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-4"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            New Hand
+          </Button>
+          
+          <Button
+            onClick={handleFinishHand}
+            disabled={!canFinishHand()}
+            size="lg"
+            className={cn(
+              "font-bold text-base py-4",
+              canFinishHand() 
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-gray-600 text-gray-400 cursor-not-allowed"
+            )}
+          >
+            <Check className="mr-2 h-5 w-5" />
+            Finish & Save Hand
+          </Button>
+        </div>
+
+        {hasApprovedCashout() && !areAllCommunityCardsFilled() && (
+          <div className="mt-3 p-3 bg-orange-600 bg-opacity-20 border border-orange-500 rounded-lg">
+            <div className="text-orange-400 font-semibold text-sm text-center">
+              ⚠️ CASHOUT APPROVED - All 5 community cards must be filled before finishing hand
+            </div>
+          </div>
+        )}
+
+        {handId && (
+          <div className="mt-2 text-center text-gray-400 text-xs">
+            Current Hand ID: {handId}
+          </div>
+        )}
+      </div>
 
       {/* Calculation Controls */}
       <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">

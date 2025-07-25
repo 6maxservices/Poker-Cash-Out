@@ -16,6 +16,7 @@ interface PlayerHandProps {
   onCardSelect: (card: Card) => void;
   onCardDeselect: (index: number) => void;
   selectedCards: Card[];
+  onCashoutStatusChange?: (playerNumber: 1 | 2, status: 'pending' | 'approved' | 'rejected' | null) => void;
 }
 
 export function PlayerHand({
@@ -27,7 +28,8 @@ export function PlayerHand({
   gameVariant,
   onCardSelect,
   onCardDeselect,
-  selectedCards
+  selectedCards,
+  onCashoutStatusChange
 }: PlayerHandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cashoutStatus, setCashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
@@ -45,18 +47,21 @@ export function PlayerHand({
 
   const handleApproveCashout = () => {
     setCashoutStatus('approved');
+    onCashoutStatusChange?.(playerNumber, 'approved');
     // TODO: Add API call to approve cashout
     console.log(`Player ${playerNumber} cashout approved: ${formatCurrency(netPayout)}`);
   };
 
   const handleRejectCashout = () => {
     setCashoutStatus('rejected');
+    onCashoutStatusChange?.(playerNumber, 'rejected');
     // TODO: Add API call to reject cashout
     console.log(`Player ${playerNumber} cashout rejected`);
   };
 
   const handleRequestCashout = () => {
     setCashoutStatus('pending');
+    onCashoutStatusChange?.(playerNumber, 'pending');
     // TODO: Add API call to request cashout
     console.log(`Player ${playerNumber} cashout requested: ${formatCurrency(netPayout)}`);
   };
