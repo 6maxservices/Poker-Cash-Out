@@ -32,7 +32,7 @@ export function CardSelectorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 border-yellow-500">
+      <DialogContent className="max-w-5xl max-h-[85vh] bg-gray-900 border-yellow-500 overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white text-center">
             {title}
@@ -47,41 +47,52 @@ export function CardSelectorModal({
           </Button>
         </DialogHeader>
         
-        <div className="p-4">
-          <div className="grid grid-cols-13 gap-2">
-            {ranks.map(rank => 
-              suits.map(suit => {
-                const card: Card = { rank, suit };
-                const selected = isCardSelected(card);
-                
-                return (
-                  <div
-                    key={`${rank}${suit}`}
-                    onClick={() => handleCardClick(card)}
-                    className={cn(
-                      "w-14 h-20 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200",
-                      "border-2 hover:scale-105",
-                      selected 
-                        ? "opacity-30 cursor-not-allowed bg-gray-700 border-gray-600" 
-                        : "bg-white border-gray-300 hover:border-yellow-500 hover:shadow-lg"
-                    )}
-                  >
-                    <div className={cn(
-                      "text-lg font-bold",
-                      isRedSuit(suit) ? "text-red-600" : "text-black"
-                    )}>
-                      {rank}
-                    </div>
-                    <div className={cn(
-                      "text-xl",
-                      isRedSuit(suit) ? "text-red-600" : "text-black"
-                    )}>
-                      {suit}
-                    </div>
-                  </div>
-                );
-              })
-            )}
+        <div className="p-4 overflow-y-auto max-h-[70vh]">
+          {/* Organize by suits in rows */}
+          <div className="space-y-3">
+            {suits.map(suit => (
+              <div key={suit} className="text-center">
+                <div className={cn(
+                  "text-sm font-semibold mb-2",
+                  isRedSuit(suit) ? "text-red-400" : "text-gray-300"
+                )}>
+                  {suit === '♠' ? 'Spades' : suit === '♥' ? 'Hearts' : suit === '♦' ? 'Diamonds' : 'Clubs'}
+                </div>
+                <div className="flex justify-center gap-1 flex-wrap">
+                  {ranks.map(rank => {
+                    const card: Card = { rank, suit };
+                    const selected = isCardSelected(card);
+                    
+                    return (
+                      <div
+                        key={`${rank}${suit}`}
+                        onClick={() => handleCardClick(card)}
+                        className={cn(
+                          "w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200",
+                          "border-2 hover:scale-105",
+                          selected 
+                            ? "opacity-30 cursor-not-allowed bg-gray-700 border-gray-600" 
+                            : "bg-white border-gray-300 hover:border-yellow-500 hover:shadow-lg"
+                        )}
+                      >
+                        <div className={cn(
+                          "text-sm font-bold",
+                          isRedSuit(suit) ? "text-red-600" : "text-black"
+                        )}>
+                          {rank}
+                        </div>
+                        <div className={cn(
+                          "text-lg",
+                          isRedSuit(suit) ? "text-red-600" : "text-black"
+                        )}>
+                          {suit}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </DialogContent>
