@@ -47,6 +47,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get recent calculations
+  app.get("/api/calculations/recent", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const calculations = await storage.getRecentCalculations(limit);
+      res.json(calculations);
+    } catch (error) {
+      console.error("Error retrieving recent calculations:", error);
+      res.status(500).json({ message: "Failed to retrieve recent calculations" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

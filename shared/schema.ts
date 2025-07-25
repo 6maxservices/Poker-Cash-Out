@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { pgTable, serial, text, real, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 
 export const suits = ['♠', '♥', '♦', '♣'] as const;
 export const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] as const;
@@ -50,3 +52,28 @@ export const equityResultSchema = z.object({
 });
 
 export type EquityResult = z.infer<typeof equityResultSchema>;
+
+// Database tables
+export const calculations = pgTable('calculations', {
+  id: serial('id').primaryKey(),
+  gameVariant: text('game_variant').notNull(),
+  communityCards: jsonb('community_cards').notNull(),
+  player1Hand: jsonb('player1_hand').notNull(),
+  player2Hand: jsonb('player2_hand').notNull(),
+  potAmount: real('pot_amount').notNull(),
+  player1Equity: real('player1_equity').notNull(),
+  player2Equity: real('player2_equity').notNull(),
+  player1MoneyEquity: real('player1_money_equity').notNull(),
+  player2MoneyEquity: real('player2_money_equity').notNull(),
+  iterations: integer('iterations').notNull(),
+  calculationTime: real('calculation_time').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const insertCalculationSchema = createInsertSchema(calculations).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
+export type Calculation = typeof calculations.$inferSelect;

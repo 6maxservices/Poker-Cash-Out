@@ -33,7 +33,7 @@ The application follows a modern full-stack TypeScript architecture with clear s
 - **ORM**: Drizzle ORM configured for PostgreSQL
 - **Database**: PostgreSQL (via Neon serverless)
 - **Migrations**: Drizzle Kit for schema management
-- **Current Storage**: In-memory storage implementation for calculation history (development phase)
+- **Storage**: PostgreSQL database with calculations table for persistent storage
 
 ### Shared Schema
 - **Validation**: Zod schemas for type-safe data validation
