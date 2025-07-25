@@ -1,0 +1,40 @@
+Based on analyzing your code and logs, I can clearly explain the core problem with your cross-tab communication:
+
+The Problem: Separate Singleton Instances Per Tab
+Your poker calculator and TV display are creating completely separate singleton instances of TVBroadcaster. Here's what's happening:
+
+Root Cause
+The issue is in this line in tv-broadcaster.ts:
+
+export const tvBroadcaster = TVBroadcaster.getInstance();
+This creates the singleton when the module is imported, but since each browser tab loads JavaScript modules independently, they each get their own separate singleton instance.
+
+What This Means
+Calculator Tab: Has its own TVBroadcaster instance with 0 listeners
+TV Display Tab: Has its own TVBroadcaster instance with 1 listener
+When calculator broadcasts data → only notifies its own 0 listeners
+When TV display polls → only checks its own instance for updates
+The Evidence
+From your logs:
+
+Calculator shows: "TVBroadcaster: Notifying 0 listeners"
+TV Display shows: "TVBroadcaster: Current listener count: 1"
+This confirms they're separate instances.
+
+Why localStorage Polling Isn't Working
+Even though the calculator writes to localStorage, the TV display's polling logic has a critical flaw:
+
+if (stored && this.listeners.length > 0) {
+  // Only processes if THIS instance has listeners
+}
+The TV tab's instance has listeners, but the calculator tab's instance (doing the broadcasting) has 0 listeners, so the timestamp tracking gets out of sync.
+
+The Solution Strategy
+The fix requires:
+
+Remove module-level singleton creation - Don't create the singleton when the module loads
+Improve cross-tab localStorage polling - Make polling work regardless of which tab has listeners
+Better timestamp synchronization - Ensure both tabs track the same timestamp state
+This is a classic JavaScript module loading issue in multi-tab applications. The singleton pattern works within a single tab, but breaks across tabs because each tab gets its own JavaScript context.
+
+Would you like me to implement the specific code fixes to resolve this cross-tab communication issue?

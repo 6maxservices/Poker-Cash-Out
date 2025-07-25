@@ -25,16 +25,16 @@ export class TVBroadcaster {
   private pollingInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
-    console.log('TVBroadcaster: Constructor called');
+    console.log('TVBroadcaster: Constructor called - setting up cross-tab communication');
     
     // Test if we can access localStorage
     try {
       const testKey = 'tv-broadcaster-test';
       localStorage.setItem(testKey, 'test');
       localStorage.removeItem(testKey);
-      console.log('TVBroadcaster: localStorage access confirmed');
+      console.log('TVBroadcaster: localStorage access confirmed - cross-tab communication enabled');
     } catch (error) {
-      console.error('TVBroadcaster: localStorage access failed:', error);
+      console.error('TVBroadcaster: localStorage access failed - cross-tab communication disabled:', error);
     }
     
     // Listen for storage events from other tabs
@@ -92,6 +92,9 @@ export class TVBroadcaster {
     console.log('TVBroadcaster: New subscriber added, total:', this.listeners.length + 1);
     this.listeners.push(callback);
     
+    // Ensure polling is active when we have listeners
+    this.startPolling();
+    
     // Send current data if available and initialize timestamp tracking
     const stored = localStorage.getItem(TV_BROADCAST_KEY);
     if (stored) {
@@ -114,10 +117,8 @@ export class TVBroadcaster {
       this.listeners = this.listeners.filter(l => l !== callback);
       console.log('TVBroadcaster: Subscriber removed, total:', this.listeners.length);
       
-      // Stop polling if no more listeners
-      if (this.listeners.length === 0) {
-        this.stopPolling();
-      }
+      // Keep polling active even with no listeners to maintain cross-tab state synchronization
+      // This ensures we track timestamp changes from other tabs
     };
   }
 
@@ -133,27 +134,33 @@ export class TVBroadcaster {
     });
   }
 
-  // Start polling for localStorage changes (fallback for cross-tab communication)
+  // Start polling for localStorage changes (essential for cross-tab communication)
   private startPolling() {
     if (this.pollingInterval) return;
     
     this.pollingInterval = setInterval(() => {
       try {
         const stored = localStorage.getItem(TV_BROADCAST_KEY);
-        if (stored && this.listeners.length > 0) {
+        if (stored) {
           const data = JSON.parse(stored) as TVBroadcastData;
           
-          // Always process if timestamp is different (newer OR older, in case of clock differences)
-          // This ensures we catch updates even if there are timestamp inconsistencies
+          // Process ALL updates regardless of listener count
+          // This is crucial for cross-tab communication to work
           if (data.timestamp !== this.lastProcessedTimestamp) {
             console.log('TVBroadcaster: Polling detected data change:', {
               old: this.lastProcessedTimestamp,
               new: data.timestamp,
+              hasListeners: this.listeners.length > 0,
               data: data
             });
+            
             this.lastProcessedTimestamp = data.timestamp;
             this.lastData = data;
-            this.notifyListeners(data);
+            
+            // Only notify if we have listeners, but always update our internal state
+            if (this.listeners.length > 0) {
+              this.notifyListeners(data);
+            }
           }
         }
       } catch (error) {
@@ -180,6 +187,7 @@ export class TVBroadcaster {
 }
 
 // Create and export the singleton instance
-console.log('TVBroadcaster: Creating singleton instance');
+// Note: Each browser tab will get its own instance, but they communicate via localStorage
+console.log('TVBroadcaster: Creating singleton instance for this tab');
 export const tvBroadcaster = TVBroadcaster.getInstance();
-console.log('TVBroadcaster: Singleton instance created');
+console.log('TVBroadcaster: Singleton instance created for this tab');
