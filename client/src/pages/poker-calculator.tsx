@@ -20,7 +20,7 @@ import { setAppTheme } from "@/lib/theme-utils";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
-  const [potAmount, setPotAmount] = useState<number>(100);
+  const [potAmount, setPotAmount] = useState<number>(1000);
   const [feePercentage, setFeePercentage] = useState<number>(5);
   const [communityCards, setCommunityCards] = useState<CommunityCards>({
     flop: [],
@@ -343,7 +343,7 @@ export default function PokerCalculator() {
     setPlayer1CashoutStatus(null);
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
-    setPotAmount(100); // Reset pot to default amount
+    setPotAmount(1000); // Reset pot to default amount
 
     // Trigger reset for player components
     setResetCashoutTrigger(true);

@@ -21,11 +21,13 @@ export function PotAmountModal({
 }: PotAmountModalProps) {
   const [inputValue, setInputValue] = useState(currentAmount.toFixed(2));
   const [errors, setErrors] = useState<string[]>([]);
+  const [hasStartedTyping, setHasStartedTyping] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setInputValue(currentAmount.toFixed(2));
       setErrors([]);
+      setHasStartedTyping(false);
     }
   }, [isOpen, currentAmount]);
 
@@ -57,15 +59,23 @@ export function PotAmountModal({
     
     if (digit === "clear") {
       newValue = "0.00";
+      setHasStartedTyping(false);
     } else if (digit === "backspace") {
       newValue = inputValue.slice(0, -1) || "0";
     } else if (digit === ".") {
-      if (!inputValue.includes(".")) {
+      if (!hasStartedTyping) {
+        // First input overwrites default
+        newValue = "0.";
+        setHasStartedTyping(true);
+      } else if (!inputValue.includes(".")) {
         newValue = inputValue + ".";
       }
     } else {
-      // Remove leading zeros except for "0."
-      if (inputValue === "0.00" || inputValue === "0") {
+      // First digit input overwrites the default amount
+      if (!hasStartedTyping) {
+        newValue = digit;
+        setHasStartedTyping(true);
+      } else if (inputValue === "0.00" || inputValue === "0") {
         newValue = digit;
       } else {
         newValue = inputValue + digit;
@@ -94,7 +104,7 @@ export function PotAmountModal({
     }
   };
 
-  const quickAmounts = [100, 250, 500, 1000, 2500, 5000];
+  
 
   const numpadButtons = [
     ['1', '2', '3'],
@@ -192,24 +202,7 @@ export function PotAmountModal({
             </Button>
           </div>
 
-          {/* Quick Amounts */}
-          <div>
-            <Label className="text-white font-semibold mb-3 block text-lg text-center">
-              Quick Amounts
-            </Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {quickAmounts.map((amount) => (
-                <Button
-                  key={amount}
-                  variant="outline"
-                  onClick={() => setInputValue(amount.toFixed(2))}
-                  className="h-12 bg-gray-800 text-white border-gray-600 hover:bg-gray-700 hover:border-yellow-500 text-lg font-semibold"
-                >
-                  ${amount}
-                </Button>
-              ))}
-            </div>
-          </div>
+          
 
           {/* Action buttons */}
           <div className="flex gap-4 pt-4">
