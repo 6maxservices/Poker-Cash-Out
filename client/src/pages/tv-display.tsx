@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { tvApiClient, TVGameState } from "@/lib/tv-api";
 import { Card } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Monitor, Wifi, WifiOff, RotateCcw, Trophy, Check, X, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setAppTheme } from "@/lib/theme-utils";
 
 export default function TVDisplay() {
   const [gameState, setGameState] = useState<TVGameState | null>(null);
@@ -38,12 +38,12 @@ export default function TVDisplay() {
     newEventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as TVGameState;
-        
+
         // Check if this is a new hand (handId changed) - clear approved cashouts
         if (gameState && gameState.handId && data.handId !== gameState.handId) {
           setApprovedCashouts({});
         }
-        
+
         setGameState(data);
         setLastUpdate(new Date());
         console.log('TV Display: Received game state update:', data);
@@ -56,7 +56,7 @@ export default function TVDisplay() {
       console.error('TV Display: EventSource error:', error);
       setIsConnected(false);
       setConnectionStatus('error');
-      
+
       // Auto-reconnect after 3 seconds
       setTimeout(() => {
         if (accessCode) {
@@ -104,7 +104,7 @@ export default function TVDisplay() {
 
   const renderCard = (card: any) => {
     if (!card) return null;
-    
+
     return (
       <div className="w-12 h-16 bg-white rounded-lg flex flex-col items-center justify-center shadow-lg border-2 border-gray-300">
         <div className={cn(
@@ -125,14 +125,14 @@ export default function TVDisplay() {
 
   const renderCommunityCards = () => {
     if (!gameState?.communityCards) return null;
-    
+
     const { flop, turn, river } = gameState.communityCards;
     const allCommunityCards = [...(flop || [])];
     if (turn) allCommunityCards.push(turn);
     if (river) allCommunityCards.push(river);
-    
+
     if (allCommunityCards.length === 0) return null;
-    
+
     return (
       <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
         <div className="text-center">
@@ -152,7 +152,7 @@ export default function TVDisplay() {
   // Get real cashout status from game state
   const getCashoutStatus = (playerNumber: number) => {
     if (!gameState) return null;
-    
+
     if (playerNumber === 1) {
       return gameState.player1CashoutStatus;
     } else {
@@ -170,7 +170,7 @@ export default function TVDisplay() {
           player1: { amount: gameState.player1MoneyEquity || 0, timestamp: Date.now() }
         }));
       }
-      
+
       // Check if player 2 cashout was just approved
       if (gameState.player2CashoutStatus === 'approved' && !approvedCashouts.player2) {
         setApprovedCashouts(prev => ({
@@ -190,6 +190,11 @@ export default function TVDisplay() {
     };
   }, [eventSource]);
 
+  // Set TV theme on mount
+  useEffect(() => {
+    setAppTheme('tv');
+  }, []);
+
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-6">
@@ -198,7 +203,7 @@ export default function TVDisplay() {
             <div className="flex justify-center">
               <Monitor className="h-16 w-16 text-blue-400" />
             </div>
-            
+
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">TV Display</h1>
               <p className="text-gray-300">Enter access code to connect</p>
@@ -253,7 +258,7 @@ export default function TVDisplay() {
           <Monitor className="h-8 w-8 text-blue-400" />
           <h1 className="text-3xl font-bold text-white">Live Poker Display</h1>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Badge variant="outline" className="bg-green-600/20 border-green-600 text-green-400">
             <Wifi className="h-4 w-4 mr-1" />
@@ -290,7 +295,7 @@ export default function TVDisplay() {
               <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
                 <div className="text-center space-y-3">
                   <h3 className="text-xl font-semibold text-white">Player 1</h3>
-                  
+
                   {/* Player Hand Cards */}
                   {gameState.player1Hand && gameState.player1Hand.length > 0 && (
                     <div className="flex justify-center gap-2 mb-3">
@@ -301,7 +306,7 @@ export default function TVDisplay() {
                       ))}
                     </div>
                   )}
-                  
+
                   {/* Equity */}
                   <div className="bg-green-600/20 border border-green-500 rounded-lg p-3">
                     <p className="text-2xl font-bold text-green-400 mb-1">
@@ -309,7 +314,7 @@ export default function TVDisplay() {
                     </p>
                     <p className="text-sm text-gray-300">Equity</p>
                   </div>
-                  
+
                   {/* Cashout Amount - The King */}
                   <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-4">
                     <p className="text-xs text-gray-300 mb-1">CASHOUT AMOUNT</p>
@@ -317,7 +322,7 @@ export default function TVDisplay() {
                       {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity) : '$0'}
                     </p>
                   </div>
-                  
+
                   {/* Cashout Status Display */}
                   {getCashoutStatus(1) === 'pending' && (
                     <div className="bg-orange-600/20 border border-orange-500 rounded-lg p-3">
@@ -332,7 +337,7 @@ export default function TVDisplay() {
                       </div>
                     </div>
                   )}
-                  
+
                   {getCashoutStatus(1) === 'approved' && (
                     <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
                       <div className="trophy-bounce text-center">
@@ -346,7 +351,7 @@ export default function TVDisplay() {
                       </div>
                     </div>
                   )}
-                  
+
                   {getCashoutStatus(1) === 'rejected' && (
                     <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
                       <div className="text-center">
@@ -367,7 +372,7 @@ export default function TVDisplay() {
               <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
                 <div className="text-center space-y-3">
                   <h3 className="text-xl font-semibold text-white">Player 2</h3>
-                  
+
                   {/* Player Hand Cards */}
                   {gameState.player2Hand && gameState.player2Hand.length > 0 && (
                     <div className="flex justify-center gap-2 mb-3">
@@ -378,7 +383,7 @@ export default function TVDisplay() {
                       ))}
                     </div>
                   )}
-                  
+
                   {/* Equity */}
                   <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
                     <p className="text-2xl font-bold text-red-400 mb-1">
@@ -386,7 +391,7 @@ export default function TVDisplay() {
                     </p>
                     <p className="text-sm text-gray-300">Equity</p>
                   </div>
-                  
+
                   {/* Cashout Amount - The King */}
                   <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-4">
                     <p className="text-xs text-gray-300 mb-1">CASHOUT AMOUNT</p>
@@ -394,7 +399,7 @@ export default function TVDisplay() {
                       {gameState.player2MoneyEquity ? formatCurrency(gameState.player2MoneyEquity) : '$0'}
                     </p>
                   </div>
-                  
+
                   {/* Cashout Status Display */}
                   {getCashoutStatus(2) === 'pending' && (
                     <div className="bg-orange-600/20 border border-orange-500 rounded-lg p-3">
@@ -409,7 +414,7 @@ export default function TVDisplay() {
                       </div>
                     </div>
                   )}
-                  
+
                   {getCashoutStatus(2) === 'approved' && (
                     <div className="cashout-animation bg-green-600/30 border border-green-400 rounded-lg p-4">
                       <div className="trophy-bounce text-center">
@@ -423,7 +428,7 @@ export default function TVDisplay() {
                       </div>
                     </div>
                   )}
-                  
+
                   {getCashoutStatus(2) === 'rejected' && (
                     <div className="bg-red-600/20 border border-red-500 rounded-lg p-3">
                       <div className="text-center">
@@ -487,7 +492,7 @@ export default function TVDisplay() {
             <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
               <div className="text-center space-y-3">
                 <h3 className="text-xl font-semibold text-white">Player 1</h3>
-                
+
                 {/* Placeholder Hand Cards */}
                 <div className="flex justify-center gap-2 mb-3">
                   {[1, 2].map((index) => (
@@ -496,7 +501,7 @@ export default function TVDisplay() {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Placeholder Equity */}
                 <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-3">
                   <p className="text-2xl font-bold text-gray-500 mb-1">
@@ -504,7 +509,7 @@ export default function TVDisplay() {
                   </p>
                   <p className="text-sm text-gray-400">Equity</p>
                 </div>
-                
+
                 {/* Placeholder Cashout Amount */}
                 <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">CASHOUT AMOUNT</p>
@@ -519,7 +524,7 @@ export default function TVDisplay() {
             <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
               <div className="text-center space-y-3">
                 <h3 className="text-xl font-semibold text-white">Player 2</h3>
-                
+
                 {/* Placeholder Hand Cards */}
                 <div className="flex justify-center gap-2 mb-3">
                   {[1, 2].map((index) => (
@@ -528,7 +533,7 @@ export default function TVDisplay() {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Placeholder Equity */}
                 <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-3">
                   <p className="text-2xl font-bold text-gray-500 mb-1">
@@ -536,7 +541,7 @@ export default function TVDisplay() {
                   </p>
                   <p className="text-sm text-gray-400">Equity</p>
                 </div>
-                
+
                 {/* Placeholder Cashout Amount */}
                 <div className="bg-gray-700/50 border border-gray-600 rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">CASHOUT AMOUNT</p>

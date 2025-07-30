@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,10 +28,35 @@
   /* Poker-specific colors */
   --felt-dark: hsl(133, 66%, 14%);
   --felt-light: hsl(133, 53%, 22%);
+  --felt-bright: hsl(133, 70%, 35%);
   --poker-gold: hsl(51, 100%, 50%);
+  --poker-gold-bright: hsl(51, 100%, 60%);
   --poker-black: hsl(0, 0%, 10%);
   --card-red: hsl(348, 83%, 47%);
   --card-black: hsl(0, 0%, 0%);
+  --neon-blue: hsl(212, 100%, 50%);
+  --neon-purple: hsl(270, 100%, 60%);
+  --neon-pink: hsl(330, 100%, 60%);
+  --casino-red: hsl(0, 85%, 55%);
+  
+  /* Dealer Theme - Clean & Functional */
+  --dealer-bg: hsl(0, 0%, 98%);
+  --dealer-card: hsl(0, 0%, 100%);
+  --dealer-border: hsl(0, 0%, 85%);
+  --dealer-text: hsl(0, 0%, 15%);
+  --dealer-muted: hsl(0, 0%, 60%);
+  --dealer-accent: hsl(133, 40%, 25%);
+  --dealer-gold: hsl(51, 80%, 45%);
+  
+  /* TV Theme - Flashy & Appealing */
+  --tv-bg-start: hsl(240, 15%, 8%);
+  --tv-bg-mid: hsl(270, 25%, 12%);
+  --tv-bg-end: hsl(300, 20%, 10%);
+  --tv-card: hsl(240, 10%, 15%);
+  --tv-border: hsl(270, 50%, 30%);
+  --tv-text: hsl(0, 0%, 95%);
+  --tv-gold: hsl(51, 100%, 60%);
+  --tv-glow: hsl(51, 100%, 50%);
 }
 
 .dark {
@@ -63,14 +89,123 @@
 
   body {
     @apply font-sans antialiased;
-    background: linear-gradient(135deg, var(--felt-dark) 0%, var(--felt-light) 50%, var(--felt-dark) 100%);
-    background-size: 200% 200%;
-    animation: feltShimmer 8s ease-in-out infinite;
     min-height: 100vh;
+  }
+
+  /* Default dealer theme background */
+  body:not(.tv-theme) {
+    background: linear-gradient(135deg, var(--dealer-bg) 0%, hsl(133, 10%, 95%) 100%);
+  }
+
+  /* TV theme background */
+  body.tv-theme {
+    background: linear-gradient(135deg, var(--tv-bg-start) 0%, var(--tv-bg-mid) 50%, var(--tv-bg-end) 100%);
+    background-size: 400% 400%;
+    animation: tvGradientShift 15s ease-in-out infinite;
   }
 }
 
 @layer components {
+  /* Dealer Theme Components */
+  .dealer-theme {
+    background: var(--dealer-bg);
+    color: var(--dealer-text);
+  }
+  
+  .dealer-card {
+    @apply bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all duration-200;
+    background: var(--dealer-card);
+    border-color: var(--dealer-border);
+  }
+  
+  .dealer-button {
+    @apply bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+    @apply focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    min-height: 48px; /* Better touch targets */
+  }
+  
+  .dealer-input {
+    @apply border-2 border-gray-300 focus:border-green-600 focus:ring-2 focus:ring-green-200;
+    @apply py-3 px-4 text-lg rounded-lg; /* Larger for touch */
+  }
+  
+  .dealer-pot-display {
+    @apply bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-6;
+    @apply border-2 border-yellow-400 shadow-lg;
+  }
+
+  /* TV Theme Components */
+  .tv-theme {
+    background: linear-gradient(135deg, var(--tv-bg-start) 0%, var(--tv-bg-mid) 50%, var(--tv-bg-end) 100%);
+    color: var(--tv-text);
+  }
+  
+  .tv-card {
+    @apply backdrop-blur-lg border border-purple-500/30 shadow-2xl;
+    background: rgba(15, 15, 25, 0.8);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                0 0 40px rgba(139, 92, 246, 0.15);
+  }
+  
+  .tv-glow {
+    filter: drop-shadow(0 0 20px var(--tv-glow)) drop-shadow(0 0 40px var(--tv-glow));
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+  
+  .tv-pot-display {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e  50%, #ffd700 100%);
+    box-shadow: 
+      0 0 30px rgba(255, 215, 0, 0.6),
+      0 0 60px rgba(255, 215, 0, 0.4),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    animation: goldShimmer 4s ease-in-out infinite;
+  }
+  
+  .tv-pot-display::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: sweepGlow 8s linear infinite;
+  }
+  
+  .tv-equity-bar {
+    @apply relative overflow-hidden rounded-full;
+    background: linear-gradient(90deg, #1f2937 0%, #374151 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .tv-equity-fill {
+    @apply h-full rounded-full transition-all duration-1000 ease-out;
+    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+    box-shadow: 
+      0 0 20px rgba(16, 185, 129, 0.5),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    animation: equityPulse 2s ease-in-out infinite;
+  }
+  
+  .tv-player-card {
+    @apply relative;
+    background: linear-gradient(145deg, rgba(30, 30, 45, 0.9), rgba(15, 15, 25, 0.9));
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.4),
+      0 0 30px rgba(139, 92, 246, 0.2);
+  }
+  
+  .tv-winning-player {
+    animation: winnerCelebration 2s ease-in-out infinite;
+    border-color: var(--tv-gold) !important;
+    box-shadow: 
+      0 0 40px rgba(255, 215, 0, 0.6),
+      0 0 80px rgba(255, 215, 0, 0.3) !important;
+  }
+
+  /* Shared Components */
   .felt-texture {
     background: linear-gradient(135deg, var(--felt-dark) 0%, var(--felt-light) 50%, var(--felt-dark) 100%);
     background-size: 200% 200%;
@@ -78,76 +213,169 @@
   }
 
   .card-slot {
+    @apply transition-all duration-300 ease-in-out;
     background: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(0, 0%, 94%));
     border: 2px dashed hsl(0, 0%, 80%);
-    transition: all 0.2s ease;
   }
 
   .card-slot:hover {
     border-color: var(--poker-gold);
     background: linear-gradient(145deg, hsl(60, 100%, 99%), hsl(51, 43%, 96%));
+    transform: scale(1.02);
   }
 
   .card-selected {
     background: hsl(0, 0%, 100%);
     border: 2px solid var(--poker-gold);
     box-shadow: 0 0 15px hsla(51, 100%, 50%, 0.3);
+    transform: scale(1.05);
   }
-
-  .equity-glow {
-    box-shadow: 0 0 20px hsla(122, 39%, 49%, 0.4);
+  
+  /* Cashout Animations */
+  .cashout-approved {
+    animation: cashoutSuccess 1s ease-out;
+  }
+  
+  .cashout-rejected {
+    animation: cashoutDenied 0.8s ease-out;
   }
 }
 
+/* Keyframe Animations */
 @keyframes feltShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes tvGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 20px var(--tv-glow)) drop-shadow(0 0 40px var(--tv-glow));
+  }
+  50% { 
+    filter: drop-shadow(0 0 30px var(--tv-glow)) drop-shadow(0 0 60px var(--tv-glow));
+  }
+}
+
+@keyframes goldShimmer {
   0%, 100% { 
     background-position: 0% 50%; 
+    box-shadow: 
+      0 0 30px rgba(255, 215, 0, 0.6),
+      0 0 60px rgba(255, 215, 0, 0.4);
   }
   50% { 
-    background-position: 100% 50%; 
+    background-position: 100% 50%;
+    box-shadow: 
+      0 0 40px rgba(255, 215, 0, 0.8),
+      0 0 80px rgba(255, 215, 0, 0.6);
   }
 }
 
-@keyframes cashout-celebration {
-  0% { 
-    transform: scale(0.8) rotate(-10deg); 
-    opacity: 0; 
+@keyframes sweepGlow {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes equityPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 20px rgba(16, 185, 129, 0.5),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2);
   }
   50% { 
-    transform: scale(1.2) rotate(5deg); 
+    box-shadow: 
+      0 0 30px rgba(16, 185, 129, 0.8),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes winnerCelebration {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 40px rgba(255, 215, 0, 0.6),
+      0 0 80px rgba(255, 215, 0, 0.3);
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 
+      0 0 60px rgba(255, 215, 0, 0.8),
+      0 0 120px rgba(255, 215, 0, 0.5);
+  }
+}
+
+@keyframes cashoutSuccess {
+  0% { 
+    transform: scale(0.8) rotate(-5deg); 
+    opacity: 0; 
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+  50% { 
+    transform: scale(1.1) rotate(2deg); 
     opacity: 1; 
+    background-color: rgba(34, 197, 94, 0.2);
   }
   100% { 
     transform: scale(1) rotate(0deg); 
     opacity: 1; 
+    background-color: rgba(34, 197, 94, 0.1);
   }
+}
+
+@keyframes cashoutDenied {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
 
 @keyframes trophy-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-30px); }
+  60% { transform: translateY(-15px); }
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+  .dealer-button {
+    @apply py-4 px-8 text-lg; /* Even larger on mobile */
+    min-height: 56px;
   }
-  40% {
-    transform: translateY(-30px);
+  
+  .dealer-input {
+    @apply py-4 px-5 text-xl; /* Larger for mobile touch */
   }
-  60% {
-    transform: translateY(-15px);
+  
+  .tv-card {
+    @apply p-4; /* More padding on mobile */
   }
 }
 
-@keyframes golden-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 20px rgba(255, 193, 7, 0.8));
-  }
-  50% {
-    filter: drop-shadow(0 0 40px rgba(255, 193, 7, 1)) drop-shadow(0 0 60px rgba(255, 193, 7, 0.6));
-  }
+/* Utility Classes */
+.no-touch-highlight {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.cashout-animation {
-  animation: cashout-celebration 0.8s ease-out;
+.touch-friendly {
+  min-height: 44px;
+  min-width: 44px;
 }
 
-.trophy-bounce {
-  animation: trophy-bounce 2s infinite, golden-glow 2s infinite;
+/* Print Styles for Dealer Mode */
+@media print {
+  .tv-theme * {
+    display: none !important;
+  }
+  
+  .dealer-theme {
+    background: white !important;
+    color: black !important;
+  }
 }

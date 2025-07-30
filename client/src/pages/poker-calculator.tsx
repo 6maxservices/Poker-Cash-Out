@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
+import { setAppTheme } from "@/lib/theme-utils";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -40,6 +41,11 @@ export default function PokerCalculator() {
 
   const [tvAccessCode, setTvAccessCode] = useState<string>("");
   const [tvConnectedClients, setTvConnectedClients] = useState<number>(0);
+
+  // Set dealer theme on mount
+  useEffect(() => {
+    setAppTheme('dealer');
+  }, []);
 
   useEffect(() => {
     // Fetch initial access code from server
@@ -440,34 +446,34 @@ export default function PokerCalculator() {
   };
 
   return (
-    <div className="min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
+    <div className="dealer-theme min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
-          <Spade className="inline text-yellow-500 mr-2" size={24} />
+      <div className="text-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+          <Spade className="inline text-gray-700 mr-2" size={24} />
           Professional Poker Equity Calculator
-          <Heart className="inline text-red-500 ml-2" size={24} />
+          <Heart className="inline text-red-600 ml-2" size={24} />
         </h1>
-        <p className="text-gray-300 text-sm">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
+        <p className="text-gray-600 text-sm font-medium">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
       </div>
 
       {/* Pot Amount - Prominent Display */}
-      <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-4 mb-6 border-2 border-yellow-400 shadow-2xl">
+      <div className="dealer-pot-display mb-6">
         <div className="text-center">
-          <div className="text-black font-bold text-sm mb-2 uppercase tracking-wide">
+          <div className="text-black font-bold text-sm mb-3 uppercase tracking-wide">
             Current Pot Amount
           </div>
           <div 
-            className="bg-black bg-opacity-90 rounded-lg p-4 cursor-pointer hover:bg-opacity-80 transition-all duration-200 border border-yellow-300"
+            className="bg-white bg-opacity-95 rounded-lg p-6 cursor-pointer hover:bg-opacity-100 transition-all duration-200 border border-yellow-300 dealer-card touch-friendly"
             onClick={() => setIsPotModalOpen(true)}
           >
             <div className="flex items-center justify-center gap-3">
-              <DollarSign className="text-yellow-500" size={32} />
-              <span className="text-white font-bold text-3xl md:text-4xl">
+              <DollarSign className="text-green-700" size={36} />
+              <span className="text-gray-800 font-bold text-3xl md:text-4xl">
                 {formatPotAmount(potAmount)}
               </span>
             </div>
-            <p className="text-gray-400 text-sm mt-2">Click to edit pot amount</p>
+            <p className="text-gray-600 text-sm mt-3 font-medium">Tap to edit pot amount</p>
           </div>
         </div>
       </div>
