@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
