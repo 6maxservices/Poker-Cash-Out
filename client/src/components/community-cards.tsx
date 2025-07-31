@@ -89,7 +89,7 @@ export function CommunityCards({
           <div className="flex gap-2">
             {[0, 1, 2].map(index => (
               <div key={index}>
-                {flop[index] ? (
+                {flop && flop[index] ? (
                   <div 
                     className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
                     onClick={() => onCardDeselect('flop', index)}

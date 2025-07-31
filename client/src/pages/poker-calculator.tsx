@@ -456,7 +456,10 @@ export default function PokerCalculator() {
               <Calculator className="h-8 w-8" />
               Poker Calculator
             </h1>
-            <ThemeSelector />
+            <ThemeSelector 
+              currentTheme={'dealer'}
+              onThemeChange={(theme) => setAppTheme(theme)}
+            />
           </div>
           
           {/* Pot Amount Display */}
@@ -560,7 +563,9 @@ export default function PokerCalculator() {
           {/* Community Cards */}
           <div className="lg:col-span-2">
             <CommunityCardsComponent
-              communityCards={communityCards}
+              flop={communityCards.flop || []}
+              turn={communityCards.turn}
+              river={communityCards.river}
               selectedCards={getAllSelectedCards()}
               onCardSelect={handleCommunityCardSelect}
               onCardDeselect={handleCommunityCardDeselect}
@@ -583,28 +588,28 @@ export default function PokerCalculator() {
           <PlayerHand
             playerNumber={1}
             gameVariant={gameVariant}
-            hand={player1Hand}
+            cards={player1Hand.cards}
             selectedCards={getAllSelectedCards()}
             onCardSelect={handlePlayer1CardSelect}
             onCardDeselect={handlePlayer1CardDeselect}
-            cashoutStatus={player1CashoutStatus}
             onCashoutStatusChange={handleCashoutStatusChange}
-            equity={equityResult?.player1Equity}
-            moneyEquity={equityResult?.player1MoneyEquity}
-            resetTrigger={resetCashoutTrigger}
+            equity={equityResult?.player1Equity || 0}
+            moneyEquity={equityResult?.player1MoneyEquity || 0}
+            feePercentage={feePercentage}
+            resetCashoutStatus={resetCashoutTrigger}
           />
           <PlayerHand
             playerNumber={2}
             gameVariant={gameVariant}
-            hand={player2Hand}
+            cards={player2Hand.cards}
             selectedCards={getAllSelectedCards()}
             onCardSelect={handlePlayer2CardSelect}
             onCardDeselect={handlePlayer2CardDeselect}
-            cashoutStatus={player2CashoutStatus}
             onCashoutStatusChange={handleCashoutStatusChange}
-            equity={equityResult?.player2Equity}
-            moneyEquity={equityResult?.player2MoneyEquity}
-            resetTrigger={resetCashoutTrigger}
+            equity={equityResult?.player2Equity || 0}
+            moneyEquity={equityResult?.player2MoneyEquity || 0}
+            feePercentage={feePercentage}
+            resetCashoutStatus={resetCashoutTrigger}
           />
         </div>
 

@@ -77,7 +77,7 @@ export function PlayerHand({
   };
 
   const renderCardSlot = (index: number) => {
-    const card = cards[index];
+    const card = cards && cards[index];
     
     if (card) {
       return (
