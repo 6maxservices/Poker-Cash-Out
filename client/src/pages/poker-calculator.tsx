@@ -17,6 +17,7 @@ import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink } from "luc
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
+import { ThemeSelector } from "@/components/theme-selector";
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -446,250 +447,21 @@ export default function PokerCalculator() {
   };
 
   return (
-    <div className="dealer-theme min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-          <Spade className="inline text-gray-700 mr-2" size={24} />
-          Professional Poker Equity Calculator
-          <Heart className="inline text-red-600 ml-2" size={24} />
-        </h1>
-        <p className="text-gray-600 text-sm font-medium">Lightning-fast Monte Carlo calculations • 20,000 iterations</p>
-      </div>
-
-      {/* Pot Amount - Prominent Display */}
-      <div className="dealer-pot-display mb-6">
-        <div className="text-center">
-          <div className="text-black font-bold text-sm mb-3 uppercase tracking-wide">
-            Current Pot Amount
-          </div>
-          <div 
-            className="bg-white bg-opacity-95 rounded-lg p-6 cursor-pointer hover:bg-opacity-100 transition-all duration-200 border border-yellow-300 dealer-card touch-friendly"
-            onClick={() => setIsPotModalOpen(true)}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <DollarSign className="text-green-700" size={36} />
-              <span className="text-gray-800 font-bold text-3xl md:text-4xl">
-                {formatPotAmount(potAmount)}
-              </span>
-            </div>
-            <p className="text-gray-600 text-sm mt-3 font-medium">Tap to edit pot amount</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Game Settings */}
-      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <div className="flex items-center gap-2">
-            <Label className="text-white font-semibold text-sm">Game Variant:</Label>
-            <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-              <SelectTrigger className="w-48 bg-black text-white border-yellow-500">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nlh">No Limit Hold'em</SelectItem>
-                <SelectItem value="plo4">PLO4 (4-card Omaha)</SelectItem>
-                <SelectItem value="plo5">PLO5 (5-card Omaha)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Label className="text-white font-semibold text-sm">Service Fee:</Label>
-            <div className="flex items-center gap-1">
-              <Input
-                type="number"
-                value={feePercentage}
-                onChange={(e) => setFeePercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-                min="0"
-                max="100"
-                step="0.1"
-                className="w-20 bg-black text-white border-yellow-500 text-center"
-              />
-              <span className="text-white font-semibold text-sm">%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-          {/* TV Broadcast Panel */}
-          <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-2xl p-4 border border-blue-700/50">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Monitor className="h-6 w-6 text-blue-400" />
-                <div>
-                  <h3 className="text-white font-semibold">TV Display</h3>
-                  <p className="text-gray-300 text-sm">Access Code: <span className="font-mono font-bold text-blue-400">{tvAccessCode}</span></p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className="bg-green-600/20 border-green-600 text-green-400">
-                  {tvConnectedClients} Connected
-                </Badge>
-                <Button size="sm" variant="outline" onClick={regenerateTvCode}>
-                  New Code
-                </Button>
-                <Button size="sm" onClick={() => window.open('/tv', '_blank')} className="bg-blue-600 hover:bg-blue-700">
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  Open TV
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 rounded-2xl p-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
-            </div>
-          </div>
-        </div>
-
-      {/* Players - Moved before community cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <PlayerHand
-          playerNumber={1}
-          cards={player1Hand.cards}
-          equity={equityResult?.player1Equity || 0}
-          moneyEquity={equityResult?.player1MoneyEquity || 0}
-          feePercentage={feePercentage}
-          gameVariant={gameVariant}
-          onCardSelect={handlePlayer1CardSelect}
-          onCardDeselect={handlePlayer1CardDeselect}
-          selectedCards={getAllSelectedCards()}
-          onCashoutStatusChange={handleCashoutStatusChange}
-          resetCashoutStatus={resetCashoutTrigger}
-        />
-
-        <PlayerHand
-          playerNumber={2}
-          cards={player2Hand.cards}
-          equity={equityResult?.player2Equity || 0}
-          moneyEquity={equityResult?.player2MoneyEquity || 0}
-          feePercentage={feePercentage}
-          gameVariant={gameVariant}
-          onCardSelect={handlePlayer2CardSelect}
-          onCardDeselect={handlePlayer2CardDeselect}
-          selectedCards={getAllSelectedCards()}
-          onCashoutStatusChange={handleCashoutStatusChange}
-          resetCashoutStatus={resetCashoutTrigger}
-        />
-      </div>
-
-      {/* Community Cards */}
-      <CommunityCardsComponent
-        flop={communityCards.flop}
-        turn={communityCards.turn}
-        river={communityCards.river}
-        onCardSelect={handleCommunityCardSelect}
-        onCardDeselect={handleCommunityCardDeselect}
-        selectedCards={getAllSelectedCards()}
-      />
-
-      {/* Burned Cards */}
-      <BurnedCards
-        burnedCards={burnedCards}
-        onCardAdd={handleBurnedCardAdd}
-        onCardRemove={handleBurnedCardRemove}
-        selectedCards={getAllSelectedCards()}
-      />
-
-      {/* Hand Management Controls */}
-      <div className="bg-black bg-opacity-60 rounded-xl p-4 mb-4 backdrop-blur-sm border border-red-500 border-opacity-50">
-        <h3 className="text-white font-bold text-lg mb-3 text-center">
-          <span className="text-red-500 mr-2">🎰</span>
-          Dealer Controls
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Button
-            onClick={handleNewHand}
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-4"
-          >
-            New Hand
-          </Button>
-
-          <Button
-            onClick={handleFinishHand}
-            disabled={!canFinishHand()}
-            size="lg"
-            className={cn(
-              "font-bold text-base py-4",
-              canFinishHand() 
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-gray-600 text-gray-400 cursor-not-allowed"
-            )}
-          >
-            Finish & Save Hand
-          </Button>
-        </div>
-
-        {hasApprovedCashout() && !areAllCommunityCardsFilled() && (
-          <div className="mt-3 p-3 bg-orange-600 bg-opacity-20 border border-orange-500 rounded-lg">
-            <div className="text-orange-400 font-semibold text-sm text-center">
-              ⚠️ CASHOUT APPROVED - All 5 community cards must be filled before finishing hand
-            </div>
-          </div>
-        )}
-
-        {handId && (
-          <div className="mt-2 text-center text-gray-400 text-xs">
-            Current Hand ID: {handId}
-          </div>
-        )}
-      </div>
-
-      {/* Calculation Status */}
-      <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-        <div className="text-center mb-3">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <div className={`w-3 h-3 rounded-full ${calculateEquityMutation.isPending ? 'bg-yellow-500 animate-pulse' : canCalculate() ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-            <span className="text-white font-medium">
-              {calculateEquityMutation.isPending ? 'Calculating Live...' : canCalculate() ? 'Live Calculation Active' : 'Waiting for Cards...'}
-            </span>
-          </div>
-          <Button
-            onClick={handleCalculateEquity}
-            disabled={!canCalculate() || calculateEquityMutation.isPending}
-            size="sm"
-            variant="outline"
-            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            Recalculate Now
-          </Button>
-          {!canCalculate() && (
-            <p className="text-gray-400 text-xs mt-2">
-              Select all required cards for both players for live calculations
-            </p>
-          )}
-        </div>
-
-        {/* Results Display */}
-        <EquityDisplay
-          result={equityResult}
-          isCalculating={calculateEquityMutation.isPending}
-          onRecalculate={handleCalculateEquity}
-          onSave={handleSave}
-          onReset={handleReset}
-          burnedCardsCount={burnedCards.length}
-        />
-      </div>
-
-      {/* Footer */}
-      <div className="text-center mt-4 text-gray-500">
-        <p className="text-xs">© 2024 Professional Poker Tools • Monte Carlo Simulation Engine</p>
-      </div>
-
-      {/* Pot Amount Modal */}
-      <PotAmountModal
-        isOpen={isPotModalOpen}
-        onClose={() => setIsPotModalOpen(false)}
-        currentAmount={potAmount}
-        onAmountChange={setPotAmount}
-      />
-    </div>
+    
+    
+      
+        
+          
+            
+          
+          
+            
+              
+              
+            
+          
+        
+      
+    
   );
 }

@@ -42,20 +42,20 @@
   /* Dealer Theme - Clean & Functional */
   --dealer-bg: hsl(0, 0%, 98%);
   --dealer-card: hsl(0, 0%, 100%);
-  --dealer-border: hsl(0, 0%, 85%);
-  --dealer-text: hsl(0, 0%, 15%);
-  --dealer-muted: hsl(0, 0%, 60%);
-  --dealer-accent: hsl(133, 40%, 25%);
-  --dealer-gold: hsl(51, 80%, 45%);
+  --dealer-border: hsl(0, 0%, 80%);
+  --dealer-text: hsl(0, 0%, 10%);
+  --dealer-muted: hsl(0, 0%, 50%);
+  --dealer-accent: hsl(133, 50%, 35%);
+  --dealer-gold: hsl(51, 100%, 50%);
   
   /* TV Theme - Flashy & Appealing */
-  --tv-bg-start: hsl(240, 15%, 8%);
-  --tv-bg-mid: hsl(270, 25%, 12%);
-  --tv-bg-end: hsl(300, 20%, 10%);
-  --tv-card: hsl(240, 10%, 15%);
-  --tv-border: hsl(270, 50%, 30%);
-  --tv-text: hsl(0, 0%, 95%);
-  --tv-gold: hsl(51, 100%, 60%);
+  --tv-bg-start: hsl(240, 20%, 6%);
+  --tv-bg-mid: hsl(270, 30%, 10%);
+  --tv-bg-end: hsl(300, 25%, 8%);
+  --tv-card: hsl(240, 15%, 12%);
+  --tv-border: hsl(270, 60%, 40%);
+  --tv-text: hsl(0, 0%, 98%);
+  --tv-gold: hsl(51, 100%, 55%);
   --tv-glow: hsl(51, 100%, 50%);
 }
 
@@ -108,7 +108,7 @@
 @layer components {
   /* Dealer Theme Components */
   .dealer-theme {
-    background: var(--dealer-bg);
+    background: linear-gradient(135deg, hsl(0, 0%, 99%) 0%, hsl(133, 20%, 96%) 100%);
     color: var(--dealer-text);
   }
   
@@ -120,18 +120,18 @@
   
   .dealer-button {
     @apply bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200;
-    @apply focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
-    min-height: 48px; /* Better touch targets */
+    @apply focus:ring-2 focus:ring-green-500 focus:ring-offset-2 border-2 border-green-600 hover:border-green-700;
+    min-height: 48px;
   }
   
   .dealer-input {
     @apply border-2 border-gray-300 focus:border-green-600 focus:ring-2 focus:ring-green-200;
-    @apply py-3 px-4 text-lg rounded-lg; /* Larger for touch */
+    @apply py-3 px-4 text-lg rounded-lg bg-white;
   }
   
   .dealer-pot-display {
     @apply bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-6;
-    @apply border-2 border-yellow-400 shadow-lg;
+    @apply border-2 border-yellow-400 shadow-lg text-white font-bold;
   }
 
   /* TV Theme Components */
@@ -141,10 +141,10 @@
   }
   
   .tv-card {
-    @apply backdrop-blur-lg border border-purple-500/30 shadow-2xl;
-    background: rgba(15, 15, 25, 0.8);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                0 0 40px rgba(139, 92, 246, 0.15);
+    @apply backdrop-blur-sm border-2 border-purple-500/40 shadow-2xl;
+    background: rgba(10, 10, 20, 0.95);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 
+                0 0 30px rgba(139, 92, 246, 0.2);
   }
   
   .tv-glow {

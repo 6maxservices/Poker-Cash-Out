@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Monitor, Wifi, WifiOff, RotateCcw, Trophy, Check, X, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { setAppTheme } from "@/lib/theme-utils";
+import { setAppTheme, AppTheme } from '@/lib/theme-utils';
+import { formatCurrencyForTheme } from '@/lib/theme-utils';
+import { ThemeSelector } from '@/components/theme-selector';
 
 export default function TVDisplay() {
   const [gameState, setGameState] = useState<TVGameState | null>(null);
@@ -18,6 +20,7 @@ export default function TVDisplay() {
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [approvedCashouts, setApprovedCashouts] = useState<{[key: string]: { amount: number, timestamp: number }}>({});
+  const [currentTheme, setCurrentTheme] = useState<AppTheme>('tv');
 
   const connectToStream = useCallback((code: string) => {
     // Clean up existing connection
