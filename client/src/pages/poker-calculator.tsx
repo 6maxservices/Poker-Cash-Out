@@ -447,21 +447,214 @@ export default function PokerCalculator() {
   };
 
   return (
-    
-    
-      
-        
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+      <div className="container mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-yellow-400 flex items-center gap-2">
+              <Calculator className="h-8 w-8" />
+              Poker Calculator
+            </h1>
+            <ThemeSelector />
+          </div>
           
+          {/* Pot Amount Display */}
+          <div className="mt-4 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-4 shadow-lg">
+            <div className="text-center cursor-pointer" onClick={() => setIsPotModalOpen(true)}>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <DollarSign className="h-6 w-6 text-white" />
+                <span className="text-white text-lg font-medium">POT AMOUNT</span>
+              </div>
+              <div className="text-4xl font-bold text-white">
+                {formatPotAmount(potAmount)}
+              </div>
+              <p className="text-yellow-100 text-sm font-medium">Tap to edit pot amount</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Game Settings */}
+        <div className="mb-6 bg-black bg-opacity-40 rounded-xl p-4 backdrop-blur-sm border border-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="game-variant" className="text-sm font-medium text-gray-300 mb-2 block">
+                Game Variant
+              </Label>
+              <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
+                <SelectTrigger className="bg-gray-800 border-gray-600">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nlh">No Limit Hold'em</SelectItem>
+                  <SelectItem value="plo4">PLO4</SelectItem>
+                  <SelectItem value="plo5">PLO5</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
+            <div>
+              <Label htmlFor="service-fee" className="text-sm font-medium text-gray-300 mb-2 block">
+                Service Fee
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="service-fee"
+                  type="number"
+                  value={feePercentage}
+                  onChange={(e) => setFeePercentage(Number(e.target.value))}
+                  className="bg-gray-800 border-gray-600 text-white"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+                <span className="text-gray-400">%</span>
+              </div>
+            </div>
+
+            <div className="flex items-end">
+              <Button 
+                onClick={handleNewHand}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                New Hand
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* TV Display Section */}
+        <div className="mb-6 bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-purple-200 mb-1">TV Display</h3>
+              <p className="text-sm text-purple-300">Access Code: <span className="font-mono text-green-400">{tvAccessCode}</span></p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className="bg-green-600">
+                {tvConnectedClients} Connected
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={regenerateTvCode}
+                className="border-purple-500 text-purple-200 hover:bg-purple-800"
+              >
+                New Code
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open('/tv', '_blank')}
+                className="border-purple-500 text-purple-200 hover:bg-purple-800"
+              >
+                <ExternalLink className="h-4 w-4 mr-1" />
+                Open TV
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Game Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Community Cards */}
+          <div className="lg:col-span-2">
+            <CommunityCardsComponent
+              communityCards={communityCards}
+              selectedCards={getAllSelectedCards()}
+              onCardSelect={handleCommunityCardSelect}
+              onCardDeselect={handleCommunityCardDeselect}
+            />
+          </div>
+
+          {/* Burned Cards */}
+          <div>
+            <BurnedCards
+              burnedCards={burnedCards}
+              selectedCards={getAllSelectedCards()}
+              onCardAdd={handleBurnedCardAdd}
+              onCardRemove={handleBurnedCardRemove}
+            />
+          </div>
+        </div>
+
+        {/* Player Hands */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <PlayerHand
+            playerNumber={1}
+            gameVariant={gameVariant}
+            hand={player1Hand}
+            selectedCards={getAllSelectedCards()}
+            onCardSelect={handlePlayer1CardSelect}
+            onCardDeselect={handlePlayer1CardDeselect}
+            cashoutStatus={player1CashoutStatus}
+            onCashoutStatusChange={handleCashoutStatusChange}
+            equity={equityResult?.player1Equity}
+            moneyEquity={equityResult?.player1MoneyEquity}
+            resetTrigger={resetCashoutTrigger}
+          />
+          <PlayerHand
+            playerNumber={2}
+            gameVariant={gameVariant}
+            hand={player2Hand}
+            selectedCards={getAllSelectedCards()}
+            onCardSelect={handlePlayer2CardSelect}
+            onCardDeselect={handlePlayer2CardDeselect}
+            cashoutStatus={player2CashoutStatus}
+            onCashoutStatusChange={handleCashoutStatusChange}
+            equity={equityResult?.player2Equity}
+            moneyEquity={equityResult?.player2MoneyEquity}
+            resetTrigger={resetCashoutTrigger}
+          />
+        </div>
+
+        {/* Equity Display */}
+        <EquityDisplay
+          result={equityResult}
+          isCalculating={calculateEquityMutation.isPending}
+          onRecalculate={handleCalculateEquity}
+          onSave={handleSave}
+          onReset={handleReset}
+          burnedCardsCount={burnedCards.length}
+        />
+
+        {/* Action Buttons */}
+        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+          <Button
+            onClick={handleCalculateEquity}
+            disabled={!canCalculate() || calculateEquityMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+          >
+            <Calculator className="h-4 w-4 mr-2" />
+            {calculateEquityMutation.isPending ? 'Calculating...' : 'Calculate'}
+          </Button>
           
+          <Button
+            onClick={handleFinishHand}
+            disabled={!canFinishHand()}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+          >
+            Finish Hand
+          </Button>
           
-            
-              
-              
-            
-          
-        
-      
-    
+          <Button
+            onClick={handleReset}
+            variant="outline"
+            className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-2"
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+        </div>
+
+        {/* Pot Amount Modal */}
+        <PotAmountModal
+          isOpen={isPotModalOpen}
+          onClose={() => setIsPotModalOpen(false)}
+          currentAmount={potAmount}
+          onAmountChange={setPotAmount}
+        />
+      </div>
+    </div>
   );
 }
