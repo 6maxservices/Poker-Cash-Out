@@ -41,18 +41,18 @@ export function CommunityCards({
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">{label}</div>
           <div 
-            className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+            className="card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group min-w-[44px] min-h-[44px]"
             onClick={() => onCardDeselect(position)}
             title="Click to deselect card"
           >
             <div className={cn(
-              "text-lg font-semibold",
+              "text-lg sm:text-lg font-semibold",
               isRedSuit(card.suit) ? "text-red-600" : "text-black"
             )}>
               {card.rank}
             </div>
             <div className={cn(
-              "text-xl",
+              "text-xl sm:text-xl",
               isRedSuit(card.suit) ? "text-red-600" : "text-black"
             )}>
               {card.suit}
@@ -67,7 +67,7 @@ export function CommunityCards({
       <div className="text-center">
         <div className="text-sm text-gray-400 mb-2">{label}</div>
         <div 
-          className="card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer"
+          className="card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px]"
           onClick={() => handleCardSlotClick(position)}
         >
           <Plus className="text-gray-400 w-6 h-6" />
@@ -83,26 +83,26 @@ export function CommunityCards({
         Community Cards <span className="text-sm text-gray-400 font-normal">(Optional for Preflop)</span>
       </h2>
       
-      <div className="flex justify-center gap-3">
+      <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-3">
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">FLOP</div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             {[0, 1, 2].map(index => (
               <div key={index}>
                 {flop && flop[index] ? (
                   <div 
-                    className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+                    className="card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group min-w-[44px] min-h-[44px]"
                     onClick={() => onCardDeselect('flop', index)}
                     title="Click to deselect card"
                   >
                     <div className={cn(
-                      "text-lg font-semibold",
+                      "text-lg sm:text-lg font-semibold",
                       isRedSuit(flop[index].suit) ? "text-red-600" : "text-black"
                     )}>
                       {flop[index].rank}
                     </div>
                     <div className={cn(
-                      "text-xl",
+                      "text-xl sm:text-xl",
                       isRedSuit(flop[index].suit) ? "text-red-600" : "text-black"
                     )}>
                       {flop[index].suit}
@@ -111,7 +111,7 @@ export function CommunityCards({
                   </div>
                 ) : (
                   <div 
-                    className="card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer"
+                    className="card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px]"
                     onClick={() => handleCardSlotClick('flop')}
                   >
                     <Plus className="text-gray-400 w-6 h-6" />
@@ -122,8 +122,10 @@ export function CommunityCards({
           </div>
         </div>
 
-        {renderCard(turn, "TURN", 'turn')}
-        {renderCard(river, "RIVER", 'river')}
+        <div className="flex gap-4 sm:gap-3 justify-center">
+          {renderCard(turn, "TURN", 'turn')}
+          {renderCard(river, "RIVER", 'river')}
+        </div>
       </div>
 
       <CardSelectorModal

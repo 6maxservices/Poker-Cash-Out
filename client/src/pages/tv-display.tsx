@@ -109,7 +109,7 @@ export default function TVDisplay() {
     if (!card) return null;
 
     return (
-      <div className="w-12 h-16 bg-white rounded-lg flex flex-col items-center justify-center shadow-lg border-2 border-gray-300">
+      <div className="w-16 h-20 sm:w-12 sm:h-16 bg-white rounded-lg flex flex-col items-center justify-center shadow-lg border-2 border-gray-300">
         <div className={cn(
           "text-sm font-bold",
           isRedSuit(card.suit) ? "text-red-600" : "text-black"
@@ -139,8 +139,8 @@ export default function TVDisplay() {
     return (
       <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-3">Community Cards</h3>
-          <div className="flex justify-center gap-2">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Community Cards</h3>
+          <div className="flex flex-wrap justify-center gap-2">
             {allCommunityCards.map((card, index) => (
               <div key={index}>
                 {renderCard(card)}
@@ -200,35 +200,35 @@ export default function TVDisplay() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md p-8 bg-gray-800/90 backdrop-blur border-gray-700">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4 sm:p-6">
+        <Card className="w-full max-w-sm sm:max-w-md p-6 sm:p-8 bg-gray-800/90 backdrop-blur border-gray-700">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
-              <Monitor className="h-16 w-16 text-blue-400" />
+              <Monitor className="h-12 w-12 sm:h-16 sm:w-16 text-blue-400" />
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">TV Display</h1>
-              <p className="text-gray-300">Enter access code to connect</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">TV Display</h1>
+              <p className="text-gray-300 text-sm sm:text-base">Enter access code to connect</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="accessCode" className="text-white">Access Code</Label>
+                <Label htmlFor="accessCode" className="text-white text-base">Access Code</Label>
                 <Input
                   id="accessCode"
                   value={inputCode}
                   onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                   placeholder="Enter 6-digit code"
                   maxLength={6}
-                  className="text-center text-2xl font-mono tracking-widest bg-gray-700 border-gray-600 text-white"
+                  className="text-center text-xl sm:text-2xl font-mono tracking-widest bg-gray-700 border-gray-600 text-white min-h-[56px]"
                   onKeyPress={(e) => e.key === 'Enter' && handleConnect()}
                 />
               </div>
 
               <Button 
                 onClick={handleConnect} 
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 min-h-[48px] text-base"
                 disabled={connectionStatus === 'connecting' || inputCode.length !== 6}
               >
                 {connectionStatus === 'connecting' ? (
@@ -254,20 +254,20 @@ export default function TVDisplay() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center space-x-4">
-          <Monitor className="h-8 w-8 text-blue-400" />
-          <h1 className="text-3xl font-bold text-white">Live Poker Display</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <Monitor className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Live Poker Display</h1>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="bg-green-600/20 border-green-600 text-green-400">
-            <Wifi className="h-4 w-4 mr-1" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <Badge variant="outline" className="bg-green-600/20 border-green-600 text-green-400 text-xs sm:text-sm">
+            <Wifi className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
             Connected: {accessCode}
           </Badge>
-          <Button onClick={handleDisconnect} variant="outline" size="sm">
+          <Button onClick={handleDisconnect} variant="outline" size="sm" className="w-full sm:w-auto min-h-[40px]">
             Disconnect
           </Button>
         </div>
@@ -276,13 +276,13 @@ export default function TVDisplay() {
       {gameState ? (
         <div className="space-y-6">
           {/* Pot Amount - Main Display */}
-          <Card className="p-6 bg-gray-800/90 backdrop-blur border-gray-700">
+          <Card className="p-4 sm:p-6 bg-gray-800/90 backdrop-blur border-gray-700">
             <div className="text-center">
-              <p className="text-gray-300 text-lg mb-2">Current Pot</p>
-              <p className="text-5xl font-bold text-yellow-400 mb-3">
+              <p className="text-gray-300 text-base sm:text-lg mb-2">Current Pot</p>
+              <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-yellow-400 mb-3">
                 {formatCurrency(gameState.potAmount)}
               </p>
-              <Badge variant="secondary" className="bg-gray-700 text-gray-300">
+              <Badge variant="secondary" className="bg-gray-700 text-gray-300 text-sm">
                 {gameState.gameVariant.toUpperCase()}
               </Badge>
             </div>
@@ -293,15 +293,15 @@ export default function TVDisplay() {
 
           {/* Players Display */}
           {gameState.player1Equity !== null && gameState.player2Equity !== null && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Player 1 */}
               <Card className="p-4 bg-gray-800/90 backdrop-blur border-gray-700">
                 <div className="text-center space-y-3">
-                  <h3 className="text-xl font-semibold text-white">Player 1</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold text-white">Player 1</h3>
 
                   {/* Player Hand Cards */}
                   {gameState.player1Hand && gameState.player1Hand.length > 0 && (
-                    <div className="flex justify-center gap-2 mb-3">
+                    <div className="flex flex-wrap justify-center gap-2 mb-3">
                       {gameState.player1Hand.map((card: any, index: number) => (
                         <div key={index}>
                           {renderCard(card)}
@@ -312,16 +312,16 @@ export default function TVDisplay() {
 
                   {/* Equity */}
                   <div className="bg-green-600/20 border border-green-500 rounded-lg p-3">
-                    <p className="text-2xl font-bold text-green-400 mb-1">
+                    <p className="text-xl sm:text-2xl font-bold text-green-400 mb-1">
                       {formatPercentage(gameState.player1Equity)}
                     </p>
                     <p className="text-sm text-gray-300">Equity</p>
                   </div>
 
                   {/* Cashout Amount - The King */}
-                  <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-4">
+                  <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-3 sm:p-4">
                     <p className="text-xs text-gray-300 mb-1">CASHOUT AMOUNT</p>
-                    <p className="text-3xl font-bold text-yellow-400">
+                    <p className="text-2xl sm:text-3xl font-bold text-yellow-400">
                       {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity) : '$0'}
                     </p>
                   </div>

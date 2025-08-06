@@ -82,7 +82,7 @@ export function PlayerHand({
     if (card) {
       return (
         <div 
-          className="card-selected w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group"
+          className="card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group min-w-[44px] min-h-[44px]"
           onClick={() => onCardDeselect(index)}
           title="Click to deselect card"
         >
@@ -106,7 +106,7 @@ export function PlayerHand({
     return (
       <div 
         className={cn(
-          "card-slot w-16 h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer",
+          "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px]",
           index >= maxCards && "opacity-50"
         )}
         onClick={index < maxCards ? () => setIsModalOpen(true) : undefined}
@@ -125,7 +125,7 @@ export function PlayerHand({
         </h3>
       </div>
 
-      <div className="flex justify-center gap-2 mb-4">
+      <div className="flex flex-wrap justify-center gap-2 mb-4">
         {[0, 1, 2, 3, 4].map(index => (
           <div key={index} className={cn(
             index >= maxCards && gameVariant === 'nlh' && "hidden"
@@ -173,7 +173,7 @@ export function PlayerHand({
         {cashoutStatus === null && netPayout > 0 && (
           <Button
             onClick={handleRequestCashout}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 min-h-[48px]"
             size="sm"
           >
             Request Cashout
@@ -188,7 +188,7 @@ export function PlayerHand({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 onClick={handleApproveCashout}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 text-sm"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 text-sm min-h-[48px]"
                 size="sm"
               >
                 <Check className="mr-1 h-4 w-4" />
@@ -196,7 +196,7 @@ export function PlayerHand({
               </Button>
               <Button
                 onClick={handleRejectCashout}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 text-sm"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 text-sm min-h-[48px]"
                 size="sm"
               >
                 <X className="mr-1 h-4 w-4" />

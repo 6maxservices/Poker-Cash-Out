@@ -3,6 +3,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom mobile-friendly card sizes */
+.w-18 {
+  width: 4.5rem; /* 72px */
+}
+
+.h-28 {
+  height: 7rem; /* 112px */
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  .mobile-card-grid {
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-text-responsive {
+    font-size: 0.875rem;
+  }
+  
+  /* Improve tap targets on mobile */
+  .mobile-tap-target {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Reduce padding on mobile for better space utilization */
+  .mobile-compact {
+    padding: 0.75rem !important;
+  }
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

@@ -451,9 +451,9 @@ export default function PokerCalculator() {
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-yellow-400 flex items-center gap-2">
-              <Calculator className="h-8 w-8" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 flex items-center gap-2">
+              <Calculator className="h-6 w-6 sm:h-8 sm:w-8" />
               Poker Calculator
             </h1>
             <ThemeSelector 
@@ -479,7 +479,7 @@ export default function PokerCalculator() {
 
         {/* Game Settings */}
         <div className="mb-6 bg-black bg-opacity-40 rounded-xl p-4 backdrop-blur-sm border border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="game-variant" className="text-sm font-medium text-gray-300 mb-2 block">
                 Game Variant
@@ -515,10 +515,10 @@ export default function PokerCalculator() {
               </div>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end sm:col-span-2 lg:col-span-1">
               <Button 
                 onClick={handleNewHand}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-green-600 hover:bg-green-700 text-white min-h-[44px]"
               >
                 New Hand
               </Button>
@@ -559,9 +559,9 @@ export default function PokerCalculator() {
         </div>
 
         {/* Main Game Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
           {/* Community Cards */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-1">
             <CommunityCardsComponent
               flop={communityCards.flop || []}
               turn={communityCards.turn}
@@ -573,7 +573,7 @@ export default function PokerCalculator() {
           </div>
 
           {/* Burned Cards */}
-          <div>
+          <div className="order-2">
             <BurnedCards
               burnedCards={burnedCards}
               selectedCards={getAllSelectedCards()}
@@ -584,7 +584,7 @@ export default function PokerCalculator() {
         </div>
 
         {/* Player Hands */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
           <PlayerHand
             playerNumber={1}
             gameVariant={gameVariant}
@@ -624,11 +624,11 @@ export default function PokerCalculator() {
         />
 
         {/* Action Buttons */}
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             onClick={handleCalculateEquity}
             disabled={!canCalculate() || calculateEquityMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 min-h-[48px] text-base"
           >
             <Calculator className="h-4 w-4 mr-2" />
             {calculateEquityMutation.isPending ? 'Calculating...' : 'Calculate'}
@@ -637,7 +637,7 @@ export default function PokerCalculator() {
           <Button
             onClick={handleFinishHand}
             disabled={!canFinishHand()}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 min-h-[48px] text-base"
           >
             Finish Hand
           </Button>
@@ -645,7 +645,7 @@ export default function PokerCalculator() {
           <Button
             onClick={handleReset}
             variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-2"
+            className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-3 min-h-[48px] text-base"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset

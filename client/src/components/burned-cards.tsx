@@ -58,7 +58,7 @@ export function BurnedCards({
             className="relative group cursor-pointer"
             onClick={() => onCardRemove(index)}
           >
-            <div className="w-12 h-16 rounded-lg flex flex-col items-center justify-center bg-white border-2 border-red-300 hover:border-red-400 hover:bg-red-50 transition-colors relative">
+            <div className="w-16 h-20 sm:w-12 sm:h-16 rounded-lg flex flex-col items-center justify-center bg-white border-2 border-red-300 hover:border-red-400 hover:bg-red-50 transition-colors relative min-w-[44px] min-h-[44px]">
               <div className={cn(
                 "text-sm font-bold",
                 isRedSuit(card.suit) ? "text-red-600" : "text-black"
@@ -77,7 +77,7 @@ export function BurnedCards({
         ))}
         
         <div 
-          className="w-12 h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-red-400 hover:border-red-300 hover:bg-red-500 hover:bg-opacity-10 transition-colors"
+          className="w-16 h-20 sm:w-12 sm:h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-red-400 hover:border-red-300 hover:bg-red-500 hover:bg-opacity-10 transition-colors min-w-[44px] min-h-[44px]"
           onClick={() => setIsModalOpen(true)}
         >
           <Plus className="text-red-400 w-4 h-4" />
