@@ -3,6 +3,8 @@ export interface TVGameState {
   potAmount: number;
   gameVariant: 'nlh' | 'plo4' | 'plo5';
   handId: string | null;
+  player1Name?: string;
+  player2Name?: string;
   player1Equity: number | null;
   player2Equity: number | null;
   player1MoneyEquity: number | null;

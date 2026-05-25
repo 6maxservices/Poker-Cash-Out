@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, GameVariant } from "@shared/schema";
 import { CardSelectorModal } from "./card-selector-modal";
+import { BatchCardModal } from "./batch-card-modal";
 import { cn } from "@/lib/utils";
 import { isRedSuit, formatCurrency, calculatePotOdds } from "@/lib/poker-utils";
-import { Plus, User, Check, X } from "lucide-react";
+import { Plus, User, Check, X, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+export interface SlotTarget {
+  type: 'player1' | 'player2' | 'flop' | 'turn' | 'river';
+  index?: number;
+}
 
 interface PlayerHandProps {
   playerNumber: 1 | 2;
@@ -13,11 +19,14 @@ interface PlayerHandProps {
   moneyEquity: number;
   feePercentage: number;
   gameVariant: GameVariant;
-  onCardSelect: (card: Card) => void;
+  onCardSelect: (card: Card, index: number) => void;
   onCardDeselect: (index: number) => void;
+  onBatchCardSelect?: (cards: Card[]) => void;
   selectedCards: Card[];
   onCashoutStatusChange?: (playerNumber: 1 | 2, status: 'pending' | 'approved' | 'rejected' | null) => void;
   resetCashoutStatus?: boolean;
+  activeSlot: SlotTarget | null;
+  onSlotClick: (target: SlotTarget) => void;
 }
 
 export function PlayerHand({
@@ -29,11 +38,15 @@ export function PlayerHand({
   gameVariant,
   onCardSelect,
   onCardDeselect,
+  onBatchCardSelect,
   selectedCards,
   onCashoutStatusChange,
-  resetCashoutStatus
+  resetCashoutStatus,
+  activeSlot,
+  onSlotClick
 }: PlayerHandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [cashoutStatus, setCashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
 
   // Reset cashout status when new hand starts
@@ -51,7 +64,9 @@ export function PlayerHand({
   const netPayout = moneyEquity - feeAmount;
   
   const handleCardSelect = (card: Card) => {
-    onCardSelect(card);
+    // Determine active slot index, or fallback to append
+    const currentIdx = activeSlot?.type === `player${playerNumber}` ? (activeSlot.index ?? cards.length) : cards.length;
+    onCardSelect(card, currentIdx);
     setIsModalOpen(false);
   };
 
@@ -78,13 +93,27 @@ export function PlayerHand({
 
   const renderCardSlot = (index: number) => {
     const card = cards && cards[index];
+    const isSlotActive = activeSlot?.type === `player${playerNumber}` && activeSlot?.index === index;
     
     if (card) {
       return (
         <div 
-          className="card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-opacity relative group min-w-[44px] min-h-[44px]"
-          onClick={() => onCardDeselect(index)}
-          title="Click to deselect card"
+          className={cn(
+            "card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[44px] min-h-[44px]",
+            isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
+          )}
+          onClick={() => {
+            if (isSlotActive) {
+              setIsModalOpen(true);
+            } else {
+              onSlotClick({ type: `player${playerNumber}`, index });
+            }
+          }}
+          onDoubleClick={() => {
+            onCardDeselect(index);
+            onSlotClick({ type: `player${playerNumber}`, index });
+          }}
+          title="Click to select as active slot, double click to clear card"
         >
           <div className={cn(
             "text-sm font-semibold",
@@ -106,10 +135,19 @@ export function PlayerHand({
     return (
       <div 
         className={cn(
-          "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px]",
-          index >= maxCards && "opacity-50"
+          "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px] transition-all duration-200",
+          index >= maxCards && "opacity-50",
+          isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
         )}
-        onClick={index < maxCards ? () => setIsModalOpen(true) : undefined}
+        onClick={index < maxCards ? () => {
+          if (isSlotActive) {
+            setIsModalOpen(true);
+          } else {
+            onSlotClick({ type: `player${playerNumber}`, index });
+          }
+        } : undefined}
+        onDoubleClick={index < maxCards ? () => setIsModalOpen(true) : undefined}
+        title="Click to select as active slot, double click to open card selector"
       >
         <Plus className="text-gray-400 w-5 h-5" />
       </div>
@@ -118,11 +156,24 @@ export function PlayerHand({
 
   return (
     <div className="bg-black bg-opacity-60 rounded-xl p-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-      <div className="text-center mb-3">
-        <h3 className="text-lg font-bold text-white mb-2">
-          <User className="inline text-yellow-500 mr-2" size={18} />
-          Player {playerNumber}
-        </h3>
+      <div className="mb-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white flex items-center">
+            <User className="inline text-yellow-500 mr-2" size={18} />
+            Player {playerNumber}
+          </h3>
+          {onBatchCardSelect && (
+            <Button
+              onClick={() => setIsBatchModalOpen(true)}
+              variant="outline"
+              size="sm"
+              className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-950/20 text-xs font-semibold py-1 h-7 flex items-center gap-1 rounded-lg"
+            >
+              <Layers className="h-3 w-3" />
+              Batch Select
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -238,6 +289,18 @@ export function PlayerHand({
         selectedCards={selectedCards}
         title={`Select Card for Player ${playerNumber}`}
       />
+
+      {onBatchCardSelect && (
+        <BatchCardModal
+          isOpen={isBatchModalOpen}
+          onClose={() => setIsBatchModalOpen(false)}
+          initialCards={cards}
+          maxCards={maxCards}
+          onFinish={onBatchCardSelect}
+          otherSelectedCards={selectedCards.filter(c => !cards.some(pc => pc && pc.rank === c.rank && pc.suit === c.suit))}
+          title={`Select Player ${playerNumber} Hand (${gameVariant.toUpperCase()})`}
+        />
+      )}
     </div>
   );
 }

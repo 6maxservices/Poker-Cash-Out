@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card, GameVariant, CommunityCards, Hand, EquityResult } from "@shared/schema";
 import { CommunityCards as CommunityCardsComponent } from "@/components/community-cards";
-import { PlayerHand } from "@/components/player-hand";
+import { PlayerHand, SlotTarget } from "@/components/player-hand";
+import { DealerKeypad } from "@/components/dealer-keypad";
 import { EquityDisplay } from "@/components/equity-display";
 import { BurnedCards } from "@/components/burned-cards";
 import { PotAmountModal } from "@/components/pot-amount-modal";
@@ -13,11 +14,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
 import { ThemeSelector } from "@/components/theme-selector";
+
+interface SessionHand {
+  handId: string;
+  gameVariant: GameVariant;
+  potAmount: number;
+  feePercentage: number;
+  player1Cashed: boolean;
+  player2Cashed: boolean;
+  player1Payout: number;
+  player2Payout: number;
+  player1Fee: number;
+  player2Fee: number;
+  winner: 1 | 2 | 'split' | 'unknown';
+  houseProfit: number;
+  timestamp: string;
+}
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
@@ -38,6 +55,13 @@ export default function PokerCalculator() {
   const [player2CashoutStatus, setPlayer2CashoutStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [resetCashoutTrigger, setResetCashoutTrigger] = useState(false);
 
+  const [player1Name, setPlayer1Name] = useState<string>("Player 1");
+  const [player2Name, setPlayer2Name] = useState<string>("Player 2");
+  const [launchTheme, setLaunchTheme] = useState<'gold' | 'felt' | 'cyber' | 'overlay'>('gold');
+
+  const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
+  const [sessionHistory, setSessionHistory] = useState<SessionHand[]>([]);
+
   const { toast } = useToast();
 
   const [tvAccessCode, setTvAccessCode] = useState<string>("");
@@ -47,6 +71,199 @@ export default function PokerCalculator() {
   useEffect(() => {
     setAppTheme('dealer');
   }, []);
+
+  // Load session history on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('poker_session_history');
+    if (saved) {
+      try {
+        setSessionHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse session history:', e);
+      }
+    }
+  }, []);
+
+  const saveSessionHistory = (newHistory: SessionHand[]) => {
+    setSessionHistory(newHistory);
+    localStorage.setItem('poker_session_history', JSON.stringify(newHistory));
+  };
+
+  const getAllSelectedCards = useCallback((): Card[] => {
+    return [
+      ...communityCards.flop,
+      ...(communityCards.turn ? [communityCards.turn] : []),
+      ...(communityCards.river ? [communityCards.river] : []),
+      ...player1Hand.cards,
+      ...player2Hand.cards,
+      ...burnedCards
+    ];
+  }, [communityCards, player1Hand, player2Hand, burnedCards]);
+
+  // Reset active slot when game variant changes
+  useEffect(() => {
+    setActiveSlot({ type: 'player1', index: 0 });
+  }, [gameVariant]);
+
+  const getNextSequentialSlot = useCallback((currentSlot: SlotTarget, variant: GameVariant): SlotTarget | null => {
+    const maxCards = variant === 'nlh' ? 2 : variant === 'plo4' ? 4 : 5;
+    if (currentSlot.type === 'player1') {
+      const nextIdx = (currentSlot.index ?? 0) + 1;
+      if (nextIdx < maxCards) {
+        return { type: 'player1', index: nextIdx };
+      } else {
+        return { type: 'player2', index: 0 };
+      }
+    } else if (currentSlot.type === 'player2') {
+      const nextIdx = (currentSlot.index ?? 0) + 1;
+      if (nextIdx < maxCards) {
+        return { type: 'player2', index: nextIdx };
+      } else {
+        return { type: 'flop', index: 0 };
+      }
+    } else if (currentSlot.type === 'flop') {
+      const nextIdx = (currentSlot.index ?? 0) + 1;
+      if (nextIdx < 3) {
+        return { type: 'flop', index: nextIdx };
+      } else {
+        return { type: 'turn' };
+      }
+    } else if (currentSlot.type === 'turn') {
+      return { type: 'river' };
+    } else if (currentSlot.type === 'river') {
+      return null;
+    }
+    return null;
+  }, []);
+
+  const handleSlotClick = useCallback((target: SlotTarget) => {
+    setActiveSlot(target);
+  }, []);
+
+  const handleCardSelectFromKeypad = useCallback((card: Card) => {
+    if (!activeSlot) return;
+
+    // Check if card is already in use
+    const allSelected = getAllSelectedCards();
+    if (allSelected.some(c => c.rank === card.rank && c.suit === card.suit)) {
+      toast({
+        title: "Card already in use",
+        description: `${card.rank}${card.suit} is already dealt.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (activeSlot.type === 'player1') {
+      const idx = activeSlot.index ?? 0;
+      setPlayer1Hand(prev => {
+        const newCards = [...prev.cards];
+        if (idx < newCards.length) {
+          newCards[idx] = card;
+        } else {
+          newCards.push(card);
+        }
+        return { cards: newCards };
+      });
+    } else if (activeSlot.type === 'player2') {
+      const idx = activeSlot.index ?? 0;
+      setPlayer2Hand(prev => {
+        const newCards = [...prev.cards];
+        if (idx < newCards.length) {
+          newCards[idx] = card;
+        } else {
+          newCards.push(card);
+        }
+        return { cards: newCards };
+      });
+    } else if (activeSlot.type === 'flop') {
+      const idx = activeSlot.index ?? 0;
+      setCommunityCards(prev => {
+        const newFlop = [...prev.flop];
+        if (idx < newFlop.length) {
+          newFlop[idx] = card;
+        } else {
+          newFlop.push(card);
+        }
+        return { ...prev, flop: newFlop };
+      });
+    } else if (activeSlot.type === 'turn') {
+      setCommunityCards(prev => ({ ...prev, turn: card }));
+    } else if (activeSlot.type === 'river') {
+      setCommunityCards(prev => ({ ...prev, river: card }));
+    }
+
+    // Auto advance
+    const nextSlot = getNextSequentialSlot(activeSlot, gameVariant);
+    setActiveSlot(nextSlot);
+  }, [activeSlot, gameVariant, getAllSelectedCards, toast, getNextSequentialSlot]);
+
+  const handleClearActiveSlot = useCallback(() => {
+    if (!activeSlot) return;
+
+    if (activeSlot.type === 'player1') {
+      const idx = activeSlot.index ?? 0;
+      setPlayer1Hand(prev => ({
+        cards: prev.cards.filter((_, i) => i !== idx)
+      }));
+    } else if (activeSlot.type === 'player2') {
+      const idx = activeSlot.index ?? 0;
+      setPlayer2Hand(prev => ({
+        cards: prev.cards.filter((_, i) => i !== idx)
+      }));
+    } else if (activeSlot.type === 'flop') {
+      const idx = activeSlot.index ?? 0;
+      setCommunityCards(prev => ({
+        ...prev,
+        flop: prev.flop.filter((_, i) => i !== idx)
+      }));
+    } else if (activeSlot.type === 'turn') {
+      setCommunityCards(prev => ({ ...prev, turn: undefined }));
+    } else if (activeSlot.type === 'river') {
+      setCommunityCards(prev => ({ ...prev, river: undefined }));
+    }
+  }, [activeSlot]);
+
+  const handleClearSession = () => {
+    saveSessionHistory([]);
+    toast({
+      title: "Session History Cleared",
+      description: "P&L tracking statistics have been reset.",
+    });
+  };
+
+  const getSessionStats = () => {
+    let totalGuaranteed = 0;
+    let totalRealized = 0;
+    let totalYield = 0;
+    
+    sessionHistory.forEach(h => {
+      totalGuaranteed += (h.player1Fee || 0) + (h.player2Fee || 0);
+      totalYield += h.houseProfit || 0;
+    });
+    
+    totalRealized = totalYield - totalGuaranteed;
+    
+    return {
+      totalGuaranteed,
+      totalRealized,
+      totalYield,
+      totalHands: sessionHistory.length
+    };
+  };
+
+  const stats = getSessionStats();
+
+  const getActiveSlotName = () => {
+    if (!activeSlot) return "";
+    const typeLabel = activeSlot.type === 'player1' ? "Player 1" 
+                    : activeSlot.type === 'player2' ? "Player 2" 
+                    : activeSlot.type === 'flop' ? "Flop"
+                    : activeSlot.type === 'turn' ? "Turn"
+                    : "River";
+    const indexLabel = typeof activeSlot.index === 'number' ? ` Card ${activeSlot.index + 1}` : "";
+    return `${typeLabel}${indexLabel}`;
+  };
 
   useEffect(() => {
     // Fetch initial access code from server
@@ -91,6 +308,8 @@ export default function PokerCalculator() {
           potAmount,
           gameVariant,
           handId,
+          player1Name,
+          player2Name,
           player1Equity: result.player1Equity,
           player2Equity: result.player2Equity,
           player1MoneyEquity: result.player1MoneyEquity,
@@ -119,16 +338,6 @@ export default function PokerCalculator() {
     },
   });
 
-  const getAllSelectedCards = useCallback((): Card[] => {
-    return [
-      ...communityCards.flop,
-      ...(communityCards.turn ? [communityCards.turn] : []),
-      ...(communityCards.river ? [communityCards.river] : []),
-      ...player1Hand.cards,
-      ...player2Hand.cards,
-      ...burnedCards
-    ];
-  }, [communityCards, player1Hand, player2Hand, burnedCards]);
 
   const canCalculate = useCallback((): boolean => {
     const minCardsPerPlayer = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
@@ -183,6 +392,8 @@ export default function PokerCalculator() {
           potAmount,
           gameVariant,
           handId,
+          player1Name,
+          player2Name,
           player1Equity: null,
           player2Equity: null,
           player1MoneyEquity: null,
@@ -211,6 +422,8 @@ export default function PokerCalculator() {
         potAmount,
         gameVariant,
         handId,
+        player1Name,
+        player2Name,
         player1Equity: equityResult?.player1Equity || null,
         player2Equity: equityResult?.player2Equity || null,
         player1MoneyEquity: equityResult?.player1MoneyEquity || null,
@@ -231,19 +444,63 @@ export default function PokerCalculator() {
     }
   }, [player1CashoutStatus, player2CashoutStatus]);
 
-  const handleCommunityCardSelect = (card: Card, position: 'flop' | 'turn' | 'river') => {
+  // Send TV broadcast when player names change
+  useEffect(() => {
+    try {
+      tvApiClient.updateGameState({
+        potAmount,
+        gameVariant,
+        handId,
+        player1Name,
+        player2Name,
+        player1Equity: equityResult?.player1Equity || null,
+        player2Equity: equityResult?.player2Equity || null,
+        player1MoneyEquity: equityResult?.player1MoneyEquity || null,
+        player2MoneyEquity: equityResult?.player2MoneyEquity || null,
+        player1Hand: player1Hand.cards,
+        player2Hand: player2Hand.cards,
+        player1CashoutStatus: player1CashoutStatus,
+        player2CashoutStatus: player2CashoutStatus,
+        communityCards: {
+          flop: communityCards.flop,
+          turn: communityCards.turn,
+          river: communityCards.river,
+        }
+      });
+      console.log('TV Broadcast sent for name change:', player1Name, player2Name);
+    } catch (tvError) {
+      console.error('Failed to broadcast names to TV:', tvError);
+    }
+  }, [player1Name, player2Name]);
+
+  const handleCommunityCardSelect = useCallback((card: Card, position: 'flop' | 'turn' | 'river', index?: number) => {
+    const allSelected = getAllSelectedCards();
+    if (allSelected.some(c => c.rank === card.rank && c.suit === card.suit)) {
+      toast({
+        title: "Card already in use",
+        description: `${card.rank}${card.suit} is already dealt.`,
+        variant: "destructive"
+      });
+      return;
+    }
     setCommunityCards(prev => {
       if (position === 'flop') {
-        return { ...prev, flop: [...prev.flop, card] };
+        const idx = index ?? prev.flop.length;
+        const newFlop = [...prev.flop];
+        newFlop[idx] = card;
+        return { ...prev, flop: newFlop };
       } else if (position === 'turn') {
         return { ...prev, turn: card };
       } else {
         return { ...prev, river: card };
       }
     });
-  };
+    // Set active slot to next sequential
+    const nextSlot = getNextSequentialSlot({ type: position, index }, gameVariant);
+    setActiveSlot(nextSlot);
+  }, [gameVariant, getAllSelectedCards, toast, getNextSequentialSlot]);
 
-  const handleCommunityCardDeselect = (position: 'flop' | 'turn' | 'river', index?: number) => {
+  const handleCommunityCardDeselect = useCallback((position: 'flop' | 'turn' | 'river', index?: number) => {
     setCommunityCards(prev => {
       if (position === 'flop' && typeof index === 'number') {
         return { ...prev, flop: prev.flop.filter((_, i) => i !== index) };
@@ -254,7 +511,8 @@ export default function PokerCalculator() {
       }
       return prev;
     });
-  };
+    setActiveSlot({ type: position, index });
+  }, []);
 
   const handleBurnedCardAdd = (card: Card) => {
     setBurnedCards(prev => [...prev, card]);
@@ -264,31 +522,91 @@ export default function PokerCalculator() {
     setBurnedCards(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handlePlayer1CardSelect = (card: Card) => {
-    const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
-    if (player1Hand.cards.length < maxCards) {
-      setPlayer1Hand(prev => ({ cards: [...prev.cards, card] }));
+  const handlePlayer1CardSelect = useCallback((card: Card, index: number) => {
+    const allSelected = getAllSelectedCards();
+    if (allSelected.some(c => c.rank === card.rank && c.suit === card.suit)) {
+      toast({
+        title: "Card already in use",
+        description: `${card.rank}${card.suit} is already dealt.`,
+        variant: "destructive"
+      });
+      return;
     }
-  };
+    setPlayer1Hand(prev => {
+      const newCards = [...prev.cards];
+      newCards[index] = card;
+      return { cards: newCards };
+    });
+    // Set active slot to next sequential
+    const nextSlot = getNextSequentialSlot({ type: 'player1', index }, gameVariant);
+    setActiveSlot(nextSlot);
+  }, [gameVariant, getAllSelectedCards, toast, getNextSequentialSlot]);
 
-  const handlePlayer1CardDeselect = (index: number) => {
+  const handlePlayer1CardDeselect = useCallback((index: number) => {
     setPlayer1Hand(prev => ({
       cards: prev.cards.filter((_, i) => i !== index)
     }));
-  };
+    setActiveSlot({ type: 'player1', index });
+  }, []);
 
-  const handlePlayer2CardSelect = (card: Card) => {
-    const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
-    if (player2Hand.cards.length < maxCards) {
-      setPlayer2Hand(prev => ({ cards: [...prev.cards, card] }));
+  const handlePlayer2CardSelect = useCallback((card: Card, index: number) => {
+    const allSelected = getAllSelectedCards();
+    if (allSelected.some(c => c.rank === card.rank && c.suit === card.suit)) {
+      toast({
+        title: "Card already in use",
+        description: `${card.rank}${card.suit} is already dealt.`,
+        variant: "destructive"
+      });
+      return;
     }
-  };
+    setPlayer2Hand(prev => {
+      const newCards = [...prev.cards];
+      newCards[index] = card;
+      return { cards: newCards };
+    });
+    // Set active slot to next sequential
+    const nextSlot = getNextSequentialSlot({ type: 'player2', index }, gameVariant);
+    setActiveSlot(nextSlot);
+  }, [gameVariant, getAllSelectedCards, toast, getNextSequentialSlot]);
 
-  const handlePlayer2CardDeselect = (index: number) => {
+  const handlePlayer2CardDeselect = useCallback((index: number) => {
     setPlayer2Hand(prev => ({
       cards: prev.cards.filter((_, i) => i !== index)
     }));
-  };
+    setActiveSlot({ type: 'player2', index });
+  }, []);
+
+  const handlePlayer1BatchSelect = useCallback((cards: Card[]) => {
+    setPlayer1Hand({ cards });
+    // Advance to Player 2
+    setActiveSlot({ type: 'player2', index: 0 });
+  }, []);
+
+  const handlePlayer2BatchSelect = useCallback((cards: Card[]) => {
+    setPlayer2Hand({ cards });
+    // Advance to Board Flop
+    setActiveSlot({ type: 'flop', index: 0 });
+  }, []);
+
+  const handleCommunityBatchSelect = useCallback((cards: Card[]) => {
+    setCommunityCards({
+      flop: cards.slice(0, 3),
+      turn: cards[3],
+      river: cards[4]
+    });
+    // Set active slot to next logical empty slot or null if board is full
+    if (cards.length >= 5) {
+      setActiveSlot(null);
+    } else if (cards.length >= 3) {
+      setActiveSlot({ type: 'turn' });
+    } else {
+      setActiveSlot({ type: 'flop', index: cards.length });
+    }
+  }, []);
+
+  const handleBurnedBatchSelect = useCallback((cards: Card[]) => {
+    setBurnedCards(cards);
+  }, []);
 
   const handleCardDeselect = (card: Card) => {
     // Remove card from wherever it is
@@ -375,14 +693,84 @@ export default function PokerCalculator() {
       return;
     }
 
-    // Calculate final equity if not already done
-    if (!equityResult && canCalculate()) {
-      handleCalculateEquity();
+    // Determine hand P&L metrics
+    let p1Fee = 0;
+    let p2Fee = 0;
+    let p1Payout = 0;
+    let p2Payout = 0;
+    let winner: 1 | 2 | 'split' | 'unknown' = 'unknown';
+    let houseProfit = 0;
+
+    const p1Cashed = player1CashoutStatus === 'approved';
+    const p2Cashed = player2CashoutStatus === 'approved';
+
+    if (equityResult) {
+      if (p1Cashed) {
+        const p1Money = equityResult.player1MoneyEquity || 0;
+        p1Fee = p1Money * (feePercentage / 100);
+        p1Payout = p1Money - p1Fee;
+      }
+      if (p2Cashed) {
+        const p2Money = equityResult.player2MoneyEquity || 0;
+        p2Fee = p2Money * (feePercentage / 100);
+        p2Payout = p2Money - p2Fee;
+      }
+
+      if (equityResult.player1Equity > 99) {
+        winner = 1;
+      } else if (equityResult.player2Equity > 99) {
+        winner = 2;
+      } else if (Math.abs(equityResult.player1Equity - 50) < 1 && Math.abs(equityResult.player2Equity - 50) < 1) {
+        winner = 'split';
+      }
     }
 
-    // Save hand to database/storage
-    const handData = {
+    // Cashout Profit/Loss calculations
+    let cashoutPnL = 0;
+    if (p1Cashed && p2Cashed) {
+      cashoutPnL = potAmount - p1Payout - p2Payout;
+    } else if (p1Cashed) {
+      if (winner === 1) {
+        cashoutPnL = potAmount - p1Payout;
+      } else if (winner === 2) {
+        cashoutPnL = -p1Payout;
+      } else if (winner === 'split') {
+        cashoutPnL = (potAmount / 2) - p1Payout;
+      }
+    } else if (p2Cashed) {
+      if (winner === 2) {
+        cashoutPnL = potAmount - p2Payout;
+      } else if (winner === 1) {
+        cashoutPnL = -p2Payout;
+      } else if (winner === 'split') {
+        cashoutPnL = (potAmount / 2) - p2Payout;
+      }
+    }
+
+    houseProfit = p1Fee + p2Fee + cashoutPnL;
+
+    const newHand: SessionHand = {
       handId: handId || `hand_${Date.now()}`,
+      gameVariant,
+      potAmount,
+      feePercentage,
+      player1Cashed: p1Cashed,
+      player2Cashed: p2Cashed,
+      player1Payout: p1Payout,
+      player2Payout: p2Payout,
+      player1Fee: p1Fee,
+      player2Fee: p2Fee,
+      winner,
+      houseProfit,
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedHistory = [newHand, ...sessionHistory];
+    saveSessionHistory(updatedHistory);
+
+    // Save hand to database/storage (optional API backup)
+    const handData = {
+      handId: newHand.handId,
       gameVariant,
       potAmount,
       feePercentage,
@@ -391,15 +779,15 @@ export default function PokerCalculator() {
       player2Hand,
       burnedCards,
       equityResult,
-      timestamp: new Date().toISOString(),
+      timestamp: newHand.timestamp,
       status: 'completed'
     };
 
-    console.log('Saving completed hand:', handData);
+    console.log('Saving completed hand to database storage:', handData);
 
     toast({
-      title: "Hand Finished & Saved",
-      description: "Hand has been completed and saved to records",
+      title: "Hand Finished & Tracked",
+      description: `Guaranteed Fee: $${(p1Fee + p2Fee).toFixed(2)} | Net House Yield: $${houseProfit.toFixed(2)}`,
     });
 
     // Reset for next hand
@@ -524,36 +912,235 @@ export default function PokerCalculator() {
               </Button>
             </div>
           </div>
+
+          {/* Customizable Player Names Row */}
+          <div className="mt-4 pt-4 border-t border-gray-700/60 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="player-1-name" className="text-xs font-semibold text-gray-400 mb-2 block">
+                PLAYER 1 NAME
+              </Label>
+              <Input
+                id="player-1-name"
+                value={player1Name}
+                onChange={(e) => setPlayer1Name(e.target.value)}
+                placeholder="Player 1"
+                className="bg-gray-800 border-gray-600 text-white h-[40px] text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="player-2-name" className="text-xs font-semibold text-gray-400 mb-2 block">
+                PLAYER 2 NAME
+              </Label>
+              <Input
+                id="player-2-name"
+                value={player2Name}
+                onChange={(e) => setPlayer2Name(e.target.value)}
+                placeholder="Player 2"
+                className="bg-gray-800 border-gray-600 text-white h-[40px] text-sm"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* TV Display Section */}
-        <div className="mb-6 bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
+        {/* TV Stream and Host Profitability Dashboard side-by-side */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+          {/* TV Stream Control Panel */}
+          <div className="bg-gradient-to-br from-purple-950/40 to-black/60 border border-purple-500/35 rounded-xl p-5 shadow-2xl backdrop-blur-md flex flex-col justify-between min-h-[220px]">
             <div>
-              <h3 className="text-lg font-semibold text-purple-200 mb-1">TV Display</h3>
-              <p className="text-sm text-purple-300">Access Code: <span className="font-mono text-green-400">{tvAccessCode}</span></p>
+              <h3 className="text-lg font-bold text-purple-200 mb-1 flex items-center gap-2">
+                <Monitor className="h-5 w-5 text-purple-400 animate-pulse" />
+                TV STREAM DISPLAY
+              </h3>
+              <p className="text-xs text-purple-300/70 mb-4">Cast real-time poker equity graphics directly onto live streams & TV monitors.</p>
+              
+              <div className="bg-black/50 border border-purple-900/50 rounded-lg p-3 mb-4">
+                <div className="flex items-center justify-between text-xs text-purple-300 mb-1">
+                  <span>TV ACCESS CODE</span>
+                  <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className={cn("text-[10px] px-1.5 py-0 h-4 font-bold border-none", tvConnectedClients > 0 ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400")}>
+                    {tvConnectedClients} {tvConnectedClients === 1 ? 'Client' : 'Clients'} Active
+                  </Badge>
+                </div>
+                <div className="text-3xl font-black font-mono tracking-widest text-green-400 text-center py-1">
+                  {tvAccessCode || "----"}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className="bg-green-600">
-                {tvConnectedClients} Connected
-              </Badge>
+            
+            <div className="mb-3">
+              <Label className="text-[10px] font-bold text-purple-300 uppercase block mb-1.5">STREAM LAUNCH THEME</Label>
+              <Select value={launchTheme} onValueChange={(value: any) => setLaunchTheme(value)}>
+                <SelectTrigger className="bg-black/40 border-purple-500/20 text-purple-200 h-8 text-xs focus:ring-purple-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-purple-500/20 text-white">
+                  <SelectItem value="gold">VIP Gold Theme</SelectItem>
+                  <SelectItem value="felt">Vegas Green Felt</SelectItem>
+                  <SelectItem value="cyber">Cyber Neon Theme</SelectItem>
+                  <SelectItem value="overlay">OBS transparent Overlay</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={regenerateTvCode}
-                className="border-purple-500 text-purple-200 hover:bg-purple-800"
+                className="border-purple-500/40 text-purple-200 hover:bg-purple-950/30 text-xs font-semibold py-2.5 h-auto"
               >
-                New Code
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Reset Code
               </Button>
+              <Button
+                variant="default"
+                size="sm"
+                asChild
+                className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2.5 h-auto"
+              >
+                <a href={`/tv?theme=${launchTheme}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  Launch TV
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          {/* Host Profitability & P&L Dashboard */}
+          <div className="xl:col-span-2 bg-gradient-to-br from-gray-950 to-gray-900 border border-yellow-500/30 rounded-xl p-5 shadow-2xl backdrop-blur-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-3 border-b border-gray-800/80">
+              <div>
+                <h3 className="text-lg font-bold text-yellow-400 flex items-center gap-2">
+                  <Landmark className="h-5 w-5 text-yellow-500 animate-pulse" />
+                  HOST PROFITABILITY & SESSION P&L
+                </h3>
+                <p className="text-xs text-gray-400">Real-time house analytics & risk variance tracking</p>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open('/tv', '_blank')}
-                className="border-purple-500 text-purple-200 hover:bg-purple-800"
+                onClick={handleClearSession}
+                disabled={sessionHistory.length === 0}
+                className="self-start sm:self-center border-red-500/30 text-red-400 hover:bg-red-950/20 text-xs font-semibold py-1.5 h-auto transition-colors"
               >
-                <ExternalLink className="h-4 w-4 mr-1" />
-                Open TV
+                <Trash2 className="h-3 w-3 mr-1.5" />
+                Reset Session
               </Button>
+            </div>
+
+            {/* Grid of 3 key indicators */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              {/* Guaranteed Fees */}
+              <div className="bg-black/40 border border-gray-800/60 rounded-lg p-3 flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Guaranteed Fees</span>
+                  <Coins className="h-3.5 w-3.5 text-blue-400" />
+                </div>
+                <div>
+                  <div className="text-xl font-black text-blue-400">
+                    {formatPotAmount(stats.totalGuaranteed)}
+                  </div>
+                  <p className="text-[9px] text-gray-500 mt-0.5">EV service rake (0% risk)</p>
+                </div>
+              </div>
+
+              {/* Realized Insurance P&L */}
+              <div className="bg-black/40 border border-gray-800/60 rounded-lg p-3 flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Insurance Risk P&L</span>
+                  <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                </div>
+                <div>
+                  <div className={cn(
+                    "text-xl font-black",
+                    stats.totalRealized >= 0 ? "text-amber-400" : "text-red-400"
+                  )}>
+                    {stats.totalRealized >= 0 ? "+" : ""}{formatPotAmount(stats.totalRealized)}
+                  </div>
+                  <p className="text-[9px] text-gray-500 mt-0.5">Variance runout outcome</p>
+                </div>
+              </div>
+
+              {/* Total Yield */}
+              <div className="bg-gradient-to-r from-yellow-950/20 to-yellow-900/10 border border-yellow-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute inset-0 bg-yellow-500/2 pointer-events-none"></div>
+                <div className="flex items-center justify-between mb-1 relative z-10">
+                  <span className="text-[10px] font-bold text-yellow-500 tracking-wider uppercase">Total Session Yield</span>
+                  <Award className="h-3.5 w-3.5 text-yellow-400" />
+                </div>
+                <div className="relative z-10">
+                  <div className={cn(
+                    "text-xl font-extrabold",
+                    stats.totalYield >= 0 ? "text-yellow-400" : "text-red-500"
+                  )}>
+                    {formatPotAmount(stats.totalYield)}
+                  </div>
+                  <p className="text-[9px] text-yellow-600/70 mt-0.5 font-medium">Accumulated house yield</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Hand History list */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <History className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">Recent Runouts ({stats.totalHands})</span>
+              </div>
+              
+              {sessionHistory.length === 0 ? (
+                <div className="text-center py-6 bg-black/20 rounded-lg border border-gray-800/40 text-gray-500 text-xs italic">
+                  No completed hands tracked in this session yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-gray-800/60 bg-black/20">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-gray-900/60 text-gray-400 font-bold border-b border-gray-800/80">
+                        <th className="p-2 text-[10px] uppercase">Hand ID</th>
+                        <th className="p-2 text-[10px] uppercase">Game</th>
+                        <th className="p-2 text-[10px] uppercase text-right">Pot</th>
+                        <th className="p-2 text-[10px] uppercase text-center">Cashouts</th>
+                        <th className="p-2 text-[10px] uppercase text-right">Net Yield</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800/40">
+                      {sessionHistory.slice(0, 5).map((hand) => (
+                        <tr key={hand.handId} className="hover:bg-gray-800/25 transition-colors">
+                          <td className="p-2 font-mono text-[10px] text-gray-400">
+                            {hand.handId.substring(hand.handId.indexOf('_') + 1) || hand.handId}
+                          </td>
+                          <td className="p-2 font-bold text-gray-300">
+                            {hand.gameVariant === 'nlh' ? "NLH" : hand.gameVariant === 'plo4' ? "PLO4" : "PLO5"}
+                          </td>
+                          <td className="p-2 text-right font-semibold text-gray-300">
+                            {formatPotAmount(hand.potAmount)}
+                          </td>
+                          <td className="p-2 text-center">
+                            <div className="flex gap-1 justify-center">
+                              {hand.player1Cashed && (
+                                <Badge variant="outline" className="bg-green-950/20 text-green-400 border-green-500/20 text-[9px] py-0 px-1 font-bold">P1</Badge>
+                              )}
+                              {hand.player2Cashed && (
+                                <Badge variant="outline" className="bg-green-950/20 text-green-400 border-green-500/20 text-[9px] py-0 px-1 font-bold">P2</Badge>
+                              )}
+                              {!hand.player1Cashed && !hand.player2Cashed && (
+                                <span className="text-[10px] text-gray-500">-</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className={cn(
+                            "p-2 text-right font-bold",
+                            hand.houseProfit >= 0 ? "text-yellow-400" : "text-red-400"
+                          )}>
+                            {hand.houseProfit >= 0 ? "+" : ""}{formatPotAmount(hand.houseProfit)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -569,6 +1156,9 @@ export default function PokerCalculator() {
               selectedCards={getAllSelectedCards()}
               onCardSelect={handleCommunityCardSelect}
               onCardDeselect={handleCommunityCardDeselect}
+              onBatchCardSelect={handleCommunityBatchSelect}
+              activeSlot={activeSlot}
+              onSlotClick={handleSlotClick}
             />
           </div>
 
@@ -579,6 +1169,7 @@ export default function PokerCalculator() {
               selectedCards={getAllSelectedCards()}
               onCardAdd={handleBurnedCardAdd}
               onCardRemove={handleBurnedCardRemove}
+              onBatchCardSelect={handleBurnedBatchSelect}
             />
           </div>
         </div>
@@ -592,11 +1183,14 @@ export default function PokerCalculator() {
             selectedCards={getAllSelectedCards()}
             onCardSelect={handlePlayer1CardSelect}
             onCardDeselect={handlePlayer1CardDeselect}
+            onBatchCardSelect={handlePlayer1BatchSelect}
             onCashoutStatusChange={handleCashoutStatusChange}
             equity={equityResult?.player1Equity || 0}
             moneyEquity={equityResult?.player1MoneyEquity || 0}
             feePercentage={feePercentage}
             resetCashoutStatus={resetCashoutTrigger}
+            activeSlot={activeSlot}
+            onSlotClick={handleSlotClick}
           />
           <PlayerHand
             playerNumber={2}
@@ -605,11 +1199,24 @@ export default function PokerCalculator() {
             selectedCards={getAllSelectedCards()}
             onCardSelect={handlePlayer2CardSelect}
             onCardDeselect={handlePlayer2CardDeselect}
+            onBatchCardSelect={handlePlayer2BatchSelect}
             onCashoutStatusChange={handleCashoutStatusChange}
             equity={equityResult?.player2Equity || 0}
             moneyEquity={equityResult?.player2MoneyEquity || 0}
             feePercentage={feePercentage}
             resetCashoutStatus={resetCashoutTrigger}
+            activeSlot={activeSlot}
+            onSlotClick={handleSlotClick}
+          />
+        </div>
+
+        {/* Dealer Keypad */}
+        <div className="mb-6">
+          <DealerKeypad
+            selectedCards={getAllSelectedCards()}
+            onCardSelect={handleCardSelectFromKeypad}
+            onCardClear={handleClearActiveSlot}
+            activeSlotName={getActiveSlotName()}
           />
         </div>
 

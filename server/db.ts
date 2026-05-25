@@ -5,11 +5,12 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+// In standard standalone environments, we allow db to be optional and fall back to MemStorage
+export const db = (() => {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️ DATABASE_URL is not set. Persistent database features will be disabled; falling back to in-memory storage.");
+    return null;
+  }
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  return drizzle({ client: pool, schema });
+})();

@@ -400,6 +400,266 @@
   min-width: 44px;
 }
 
+/* ==========================================================================
+   PREMIUM CASINO TV SYSTEMS
+   ========================================================================== */
+
+/* Realistic Linen Playing Cards */
+.casino-card-model {
+  background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+  border-radius: 8px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.15), 
+    0 2px 4px -1px rgba(0, 0, 0, 0.1),
+    inset 0 0 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.casino-card-model::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.casino-card-model:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.3), 
+    0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Suit Styling */
+.suit-glow-red {
+  color: #dc2626;
+  text-shadow: 0 0 1px rgba(220, 38, 38, 0.2);
+}
+
+.suit-glow-black {
+  color: #1f2937;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Vegas Green Felt Theme Background */
+body.tv-theme.theme-felt {
+  background: radial-gradient(circle at center, #1b5e20 0%, #0c3813 60%, #061c09 100%);
+  background-size: 200% 200%;
+  animation: tvGradientShift 20s ease infinite;
+}
+
+.theme-felt .tv-card-felt {
+  background: rgba(12, 56, 19, 0.85);
+  border: 2px solid #2e7d32;
+  box-shadow: 
+    0 15px 35px rgba(0,0,0,0.5), 
+    inset 0 0 20px rgba(0,0,0,0.4);
+  backdrop-blur: 12px;
+}
+
+.theme-felt .wood-trim-border {
+  border-color: #8d6e63;
+  background: linear-gradient(180deg, #4e342e 0%, #3e2723 100%);
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.6);
+}
+
+/* VIP Gold Theme Background */
+body.tv-theme.theme-gold {
+  background: radial-gradient(circle at center, #181818 0%, #0c0c0c 70%, #020202 100%);
+  background-size: 200% 200%;
+  animation: tvGradientShift 20s ease infinite;
+}
+
+.theme-gold .tv-card-gold {
+  background: rgba(18, 18, 18, 0.9);
+  border: 2px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.7),
+    0 0 25px rgba(212, 175, 55, 0.08),
+    inset 0 0 15px rgba(212, 175, 55, 0.05);
+  backdrop-blur: 16px;
+}
+
+.theme-gold .gold-shimmer-text {
+  background: linear-gradient(135deg, #ffe082 0%, #ffb300 50%, #ffe082 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Neon Cyber Theme Background */
+body.tv-theme.theme-cyber {
+  background: radial-gradient(circle at center, #0b071e 0%, #04020a 80%, #000000 100%);
+}
+
+.theme-cyber .tv-card-cyber {
+  background: rgba(13, 8, 30, 0.85);
+  border: 2px solid #ec4899;
+  box-shadow: 
+    0 0 15px rgba(236, 72, 153, 0.2), 
+    0 0 30px rgba(168, 85, 247, 0.1),
+    inset 0 0 15px rgba(236, 72, 153, 0.1);
+  backdrop-blur: 10px;
+}
+
+/* OBS Stream Overlay Theme (Transparent Background Support) */
+body.tv-theme.theme-overlay {
+  background: transparent !important;
+  background-color: transparent !important;
+  overflow: hidden;
+}
+
+.theme-overlay .tv-card-overlay {
+  background: rgba(10, 10, 16, 0.95);
+  border-left: 5px solid #d4af37;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+/* Dynamic Live Comparative Equity Gauge */
+.equity-gauge-track {
+  height: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.equity-gauge-bar {
+  height: 100%;
+  transition: width 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  font-size: 11px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding: 0 12px;
+}
+
+.equity-gauge-bar.p1-bar {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  justify-content: flex-start;
+  box-shadow: inset 0 -2px 6px rgba(0,0,0,0.2), 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.equity-gauge-bar.p2-bar {
+  background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+  justify-content: flex-end;
+  box-shadow: inset 0 -2px 6px rgba(0,0,0,0.2), 0 0 15px rgba(220, 38, 38, 0.3);
+}
+
+.equity-gauge-divider {
+  width: 4px;
+  background: #ffffff;
+  box-shadow: 0 0 10px #ffffff, 0 0 20px #ffd700;
+  z-index: 10;
+  transition: left 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+/* Pulsing Hand Leader Badge */
+.leader-pulse-ring {
+  position: relative;
+}
+
+.leader-pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid #ffd700;
+  animation: leaderBreathing 2s infinite ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes leaderBreathing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+/* Fullscreen Cashout Celebration */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: celebrationFadeIn 0.5s ease-out forwards;
+}
+
+.celebration-plaque {
+  background: linear-gradient(145deg, #15151e 0%, #0a0a0f 100%);
+  border: 3px solid #d4af37;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 
+    0 0 50px rgba(212, 175, 55, 0.6),
+    0 25px 50px rgba(0, 0, 0, 0.9),
+    inset 0 0 30px rgba(212, 175, 55, 0.1);
+  transform: scale(0.8);
+  opacity: 0;
+  animation: celebrationPopIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+}
+
+.chip-particle {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background-image: radial-gradient(circle at center, #ffd700 30%, #b8860b 80%);
+  border-radius: 50%;
+  border: 2px dashed #ffffff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  pointer-events: none;
+  animation: floatParticle 4s linear infinite;
+}
+
+@keyframes celebrationFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes celebrationPopIn {
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(110vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(var(--drift-x, 50px)) rotate(720deg);
+    opacity: 0;
+  }
+}
+
 /* Print Styles for Dealer Mode */
 @media print {
   .tv-theme * {
@@ -411,3 +671,4 @@
     color: black !important;
   }
 }
+

@@ -5,6 +5,8 @@ export interface TVGameState {
   potAmount: number;
   gameVariant: 'nlh' | 'plo4' | 'plo5';
   handId: string | null;
+  player1Name?: string;
+  player2Name?: string;
   player1Equity: number | null;
   player2Equity: number | null;
   player1MoneyEquity: number | null;
@@ -32,6 +34,8 @@ class TVBroadcastManager extends EventEmitter {
       potAmount: 100,
       gameVariant: 'nlh',
       handId: null,
+      player1Name: 'Player 1',
+      player2Name: 'Player 2',
       player1Equity: null,
       player2Equity: null,
       player1MoneyEquity: null,
