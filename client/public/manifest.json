@@ -1,0 +1,16 @@
+{
+  "short_name": "EquityLock",
+  "name": "EquityLock Poker Cash Out",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#09090b",
+  "theme_color": "#EAB308",
+  "display": "standalone",
+  "orientation": "landscape"
+}

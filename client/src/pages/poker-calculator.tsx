@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
@@ -58,6 +58,11 @@ export default function PokerCalculator() {
   const [player1Name, setPlayer1Name] = useState<string>("Player 1");
   const [player2Name, setPlayer2Name] = useState<string>("Player 2");
   const [launchTheme, setLaunchTheme] = useState<'gold' | 'felt' | 'cyber' | 'overlay'>('gold');
+
+  // Modal open states for compact tablet layout
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTvOpen, setIsTvOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
   const [sessionHistory, setSessionHistory] = useState<SessionHand[]>([]);
@@ -840,268 +845,421 @@ export default function PokerCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 flex items-center gap-2">
-              <Calculator className="h-6 w-6 sm:h-8 sm:w-8" />
-              Poker Calculator
-            </h1>
-            <ThemeSelector 
-              currentTheme={'dealer'}
-              onThemeChange={(theme) => setAppTheme(theme)}
-            />
-          </div>
+    <div className="h-screen w-screen bg-gradient-to-br from-gray-950 via-gray-900 to-slate-950 text-white overflow-hidden flex flex-col p-2 sm:p-3 relative select-none">
+      
+      {/* Top Header Row (Height: ~48px) */}
+      <div className="flex-shrink-0 flex items-center justify-between bg-black/45 border border-gray-800/80 rounded-xl px-4 py-2 mb-2">
+        <div className="flex items-center space-x-2">
+          <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 animate-pulse" />
+          <h1 className="text-sm sm:text-base font-black tracking-widest uppercase text-white leading-none">
+            EQUITY<span className="text-yellow-400">LOCK</span>
+          </h1>
+          <Badge variant="outline" className="text-[9px] font-bold border-yellow-500/20 text-yellow-400/80 tracking-wider">
+            DEALER
+          </Badge>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {/* Quick Stats Trigger */}
+          <Button
+            onClick={() => setIsStatsOpen(true)}
+            size="sm"
+            variant="outline"
+            className="border-yellow-500/20 text-yellow-400 hover:bg-yellow-950/20 h-8 text-[11px] font-bold flex items-center gap-1"
+          >
+            <Landmark className="h-3.5 w-3.5" />
+            Session Stats
+          </Button>
+
+          {/* TV Stream pairing Code display & pairing trigger */}
+          <Button
+            onClick={() => setIsTvOpen(true)}
+            size="sm"
+            variant="outline"
+            className="border-purple-500/20 text-purple-300 hover:bg-purple-950/20 h-8 text-[11px] font-bold flex items-center gap-1"
+          >
+            <Monitor className="h-3.5 w-3.5" />
+            TV Sync ({tvAccessCode || "----"})
+          </Button>
+
+          {/* Quick Settings Gear button */}
+          <Button
+            onClick={() => setIsSettingsOpen(true)}
+            size="icon"
+            variant="outline"
+            className="border-gray-700 text-gray-300 hover:bg-gray-800 h-8 w-8 rounded-lg"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
           
-          {/* Pot Amount Display */}
-          <div className="mt-4 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-4 shadow-lg">
-            <div className="text-center cursor-pointer" onClick={() => setIsPotModalOpen(true)}>
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <DollarSign className="h-6 w-6 text-white" />
-                <span className="text-white text-lg font-medium">POT AMOUNT</span>
-              </div>
-              <div className="text-4xl font-bold text-white">
+          <ThemeSelector 
+            currentTheme={'dealer'}
+            onThemeChange={(theme) => setAppTheme(theme)}
+            className="scale-90"
+          />
+        </div>
+      </div>
+
+      {/* Pot Size Display & Game Information Row (Height: ~60px) */}
+      <div className="flex-shrink-0 grid grid-cols-12 gap-2 mb-2 items-center">
+        {/* Pot Size Card */}
+        <div 
+          onClick={() => setIsPotModalOpen(true)}
+          className="col-span-6 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-2.5 flex items-center justify-between cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all shadow-md"
+        >
+          <div className="flex items-center space-x-2">
+            <DollarSign className="h-5 w-5 text-white" />
+            <div>
+              <div className="text-[9px] font-bold text-yellow-100 uppercase tracking-widest leading-none">ACTIVE POT</div>
+              <div className="text-xl sm:text-2xl font-black text-white leading-none mt-0.5">
                 {formatPotAmount(potAmount)}
               </div>
-              <p className="text-yellow-100 text-sm font-medium">Tap to edit pot amount</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold bg-white/20 text-white rounded px-1.5 py-0.5">EDIT</span>
+        </div>
+
+        {/* Current Hand / Variant details */}
+        <div className="col-span-6 bg-black/40 border border-gray-800 rounded-xl p-2.5 flex justify-around items-center text-center">
+          <div>
+            <div className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">GAME TYPE</div>
+            <div className="text-sm font-black text-white mt-0.5 uppercase">
+              {gameVariant === 'nlh' ? "Hold'em" : gameVariant.toUpperCase()}
+            </div>
+          </div>
+          <div className="w-[1px] bg-gray-800 h-6"></div>
+          <div>
+            <div className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">FEE RATE</div>
+            <div className="text-sm font-black text-yellow-400 mt-0.5">
+              {feePercentage}%
+            </div>
+          </div>
+          <div className="w-[1px] bg-gray-800 h-6"></div>
+          <Button
+            onClick={handleNewHand}
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold h-7 text-[10px] px-2.5 py-0 rounded-lg"
+          >
+            New Hand
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Dealing Table Interface (Flex-Grow, Height is auto scaled, no scroll) */}
+      <div className="flex-grow min-h-0 grid grid-cols-12 gap-2 sm:gap-3 overflow-hidden">
+        
+        {/* Left Column: Player 1 Card Hand & Cashout status (Col Span: 4) */}
+        <div className="col-span-4 flex flex-col justify-between bg-black/20 border border-gray-800/80 rounded-2xl p-2 overflow-hidden">
+          <div className="flex-grow overflow-hidden flex flex-col justify-center">
+            <PlayerHand
+              playerNumber={1}
+              gameVariant={gameVariant}
+              cards={player1Hand.cards}
+              selectedCards={getAllSelectedCards()}
+              onCardSelect={handlePlayer1CardSelect}
+              onCardDeselect={handlePlayer1CardDeselect}
+              onBatchCardSelect={handlePlayer1BatchSelect}
+              onCashoutStatusChange={handleCashoutStatusChange}
+              equity={equityResult?.player1Equity || 0}
+              moneyEquity={equityResult?.player1MoneyEquity || 0}
+              feePercentage={feePercentage}
+              resetCashoutStatus={resetCashoutTrigger}
+              activeSlot={activeSlot}
+              onSlotClick={handleSlotClick}
+            />
+          </div>
+        </div>
+
+        {/* Center Column: Community Cards, Burned Cards & Actions (Col Span: 4) */}
+        <div className="col-span-4 flex flex-col justify-between gap-2 overflow-hidden">
+          {/* Community Board Card wrapper */}
+          <div className="bg-black/30 border border-gray-800/60 rounded-2xl p-2.5 flex flex-col justify-center">
+            <CommunityCardsComponent
+              flop={communityCards.flop || []}
+              turn={communityCards.turn}
+              river={communityCards.river}
+              selectedCards={getAllSelectedCards()}
+              onCardSelect={handleCommunityCardSelect}
+              onCardDeselect={handleCommunityCardDeselect}
+              onBatchCardSelect={handleCommunityBatchSelect}
+              activeSlot={activeSlot}
+              onSlotClick={handleSlotClick}
+            />
+          </div>
+
+          {/* Burned Cards & Actions wrapper */}
+          <div className="flex-grow flex flex-col justify-between gap-2 overflow-hidden">
+            <div className="bg-black/30 border border-gray-800/60 rounded-2xl p-2 flex flex-col justify-center">
+              <BurnedCards
+                burnedCards={burnedCards}
+                selectedCards={getAllSelectedCards()}
+                onCardAdd={handleBurnedCardAdd}
+                onCardRemove={handleBurnedCardRemove}
+                onBatchCardSelect={handleBurnedBatchSelect}
+              />
+            </div>
+
+            {/* Micro Equity display & Actions */}
+            <div className="bg-black/40 border border-gray-800/80 rounded-2xl p-2 flex flex-col justify-between">
+              <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-1">
+                <span>EQUITY RESULTS</span>
+                {calculateEquityMutation.isPending && <span className="text-yellow-400 animate-pulse">Calculating...</span>}
+              </div>
+
+              {/* Central action controls */}
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button
+                  onClick={handleCalculateEquity}
+                  disabled={!canCalculate() || calculateEquityMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs"
+                >
+                  <Calculator className="h-3.5 w-3.5 mr-1" />
+                  Calculate
+                </Button>
+                
+                <Button
+                  onClick={handleFinishHand}
+                  disabled={!canFinishHand()}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold h-9 text-xs"
+                >
+                  Finish Hand
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Game Settings */}
-        <div className="mb-6 bg-black bg-opacity-40 rounded-xl p-4 backdrop-blur-sm border border-gray-700">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="game-variant" className="text-sm font-medium text-gray-300 mb-2 block">
-                Game Variant
-              </Label>
-              <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-                <SelectTrigger className="bg-gray-800 border-gray-600">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="nlh">No Limit Hold'em</SelectItem>
-                  <SelectItem value="plo4">PLO4</SelectItem>
-                  <SelectItem value="plo5">PLO5</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Right Column: Player 2 Card Hand & Cashout status (Col Span: 4) */}
+        <div className="col-span-4 flex flex-col justify-between bg-black/20 border border-gray-800/80 rounded-2xl p-2 overflow-hidden">
+          <div className="flex-grow overflow-hidden flex flex-col justify-center">
+            <PlayerHand
+              playerNumber={2}
+              gameVariant={gameVariant}
+              cards={player2Hand.cards}
+              selectedCards={getAllSelectedCards()}
+              onCardSelect={handlePlayer2CardSelect}
+              onCardDeselect={handlePlayer2CardDeselect}
+              onBatchCardSelect={handlePlayer2BatchSelect}
+              onCashoutStatusChange={handleCashoutStatusChange}
+              equity={equityResult?.player2Equity || 0}
+              moneyEquity={equityResult?.player2MoneyEquity || 0}
+              feePercentage={feePercentage}
+              resetCashoutStatus={resetCashoutTrigger}
+              activeSlot={activeSlot}
+              onSlotClick={handleSlotClick}
+            />
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Dealer Keyboard (Height: ~180px, flex-shrink-0) */}
+      <div className="flex-shrink-0 mt-2 bg-black/50 border border-gray-800/80 rounded-2xl p-2">
+        <DealerKeypad
+          selectedCards={getAllSelectedCards()}
+          onCardSelect={handleCardSelectFromKeypad}
+          onCardClear={handleClearActiveSlot}
+          activeSlotName={getActiveSlotName()}
+        />
+      </div>
+
+      {/* Settings Modal Overlay */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <Button
+              onClick={() => setIsSettingsOpen(false)}
+              className="absolute top-4 right-4 bg-transparent border-none text-gray-400 hover:text-white"
+              size="icon"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <h3 className="text-lg font-black text-yellow-400 tracking-wider uppercase mb-2">GAME SETTINGS</h3>
             
-            <div>
-              <Label htmlFor="service-fee" className="text-sm font-medium text-gray-300 mb-2 block">
-                Service Fee
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="service-fee"
-                  type="number"
-                  value={feePercentage}
-                  onChange={(e) => setFeePercentage(Number(e.target.value))}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                />
-                <span className="text-gray-400">%</span>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-xs font-bold text-gray-400 block mb-1">GAME VARIANT</Label>
+                <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectItem value="nlh">No Limit Hold'em</SelectItem>
+                    <SelectItem value="plo4">PLO4 (4 Cards)</SelectItem>
+                    <SelectItem value="plo5">PLO5 (5 Cards)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-gray-400 block mb-1">SERVICE RAKE FEE</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={feePercentage}
+                    onChange={(e) => setFeePercentage(Number(e.target.value))}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                  />
+                  <span className="text-gray-400">%</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-bold text-gray-400 block mb-1">PLAYER 1 NAME</Label>
+                  <Input
+                    value={player1Name}
+                    onChange={(e) => setPlayer1Name(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-bold text-gray-400 block mb-1">PLAYER 2 NAME</Label>
+                  <Input
+                    value={player2Name}
+                    onChange={(e) => setPlayer2Name(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex items-end sm:col-span-2 lg:col-span-1">
-              <Button 
-                onClick={handleNewHand}
-                className="w-full bg-green-600 hover:bg-green-700 text-white min-h-[44px]"
-              >
-                New Hand
-              </Button>
-            </div>
-          </div>
-
-          {/* Customizable Player Names Row */}
-          <div className="mt-4 pt-4 border-t border-gray-700/60 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="player-1-name" className="text-xs font-semibold text-gray-400 mb-2 block">
-                PLAYER 1 NAME
-              </Label>
-              <Input
-                id="player-1-name"
-                value={player1Name}
-                onChange={(e) => setPlayer1Name(e.target.value)}
-                placeholder="Player 1"
-                className="bg-gray-800 border-gray-600 text-white h-[40px] text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="player-2-name" className="text-xs font-semibold text-gray-400 mb-2 block">
-                PLAYER 2 NAME
-              </Label>
-              <Input
-                id="player-2-name"
-                value={player2Name}
-                onChange={(e) => setPlayer2Name(e.target.value)}
-                placeholder="Player 2"
-                className="bg-gray-800 border-gray-600 text-white h-[40px] text-sm"
-              />
-            </div>
+            <Button
+              onClick={() => setIsSettingsOpen(false)}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 mt-4"
+            >
+              SAVE & APPLY
+            </Button>
           </div>
         </div>
+      )}
 
-        {/* TV Stream and Host Profitability Dashboard side-by-side */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-          {/* TV Stream Control Panel */}
-          <div className="bg-gradient-to-br from-purple-950/40 to-black/60 border border-purple-500/35 rounded-xl p-5 shadow-2xl backdrop-blur-md flex flex-col justify-between min-h-[220px]">
-            <div>
-              <h3 className="text-lg font-bold text-purple-200 mb-1 flex items-center gap-2">
-                <Monitor className="h-5 w-5 text-purple-400 animate-pulse" />
-                TV STREAM DISPLAY
-              </h3>
-              <p className="text-xs text-purple-300/70 mb-4">Cast real-time poker equity graphics directly onto live streams & TV monitors.</p>
-              
-              <div className="bg-black/50 border border-purple-900/50 rounded-lg p-3 mb-4">
-                <div className="flex items-center justify-between text-xs text-purple-300 mb-1">
-                  <span>TV ACCESS CODE</span>
-                  <Badge variant={tvConnectedClients > 0 ? "default" : "secondary"} className={cn("text-[10px] px-1.5 py-0 h-4 font-bold border-none", tvConnectedClients > 0 ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400")}>
-                    {tvConnectedClients} {tvConnectedClients === 1 ? 'Client' : 'Clients'} Active
-                  </Badge>
-                </div>
-                <div className="text-3xl font-black font-mono tracking-widest text-green-400 text-center py-1">
+      {/* TV Stream Sync Modal */}
+      {isTvOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-purple-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <Button
+              onClick={() => setIsTvOpen(false)}
+              className="absolute top-4 right-4 bg-transparent border-none text-gray-400 hover:text-white"
+              size="icon"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <h3 className="text-lg font-black text-purple-400 tracking-wider uppercase mb-2">TV STREAM PAIRING</h3>
+
+            <div className="space-y-4">
+              <div className="bg-black/50 border border-purple-900/50 rounded-xl p-4 text-center">
+                <span className="text-[10px] font-bold text-purple-300 block mb-1">TV ACCESS CODE</span>
+                <span className="text-4xl font-black font-mono tracking-widest text-green-400">
                   {tvAccessCode || "----"}
-                </div>
+                </span>
+                <p className="text-[10px] text-gray-500 mt-2">
+                  {tvConnectedClients} TV Displays Active
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-gray-400 block mb-1">STREAM LAYOUT THEME</Label>
+                <Select value={launchTheme} onValueChange={(value: any) => setLaunchTheme(value)}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectItem value="gold">VIP Gold Theme</SelectItem>
+                    <SelectItem value="felt">Vegas Green Felt</SelectItem>
+                    <SelectItem value="cyber">Cyber Neon Theme</SelectItem>
+                    <SelectItem value="overlay">OBS Transparent Overlay</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
-            <div className="mb-3">
-              <Label className="text-[10px] font-bold text-purple-300 uppercase block mb-1.5">STREAM LAUNCH THEME</Label>
-              <Select value={launchTheme} onValueChange={(value: any) => setLaunchTheme(value)}>
-                <SelectTrigger className="bg-black/40 border-purple-500/20 text-purple-200 h-8 text-xs focus:ring-purple-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-purple-500/20 text-white">
-                  <SelectItem value="gold">VIP Gold Theme</SelectItem>
-                  <SelectItem value="felt">Vegas Green Felt</SelectItem>
-                  <SelectItem value="cyber">Cyber Neon Theme</SelectItem>
-                  <SelectItem value="overlay">OBS transparent Overlay</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-auto">
+            <div className="grid grid-cols-2 gap-3 mt-4">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={regenerateTvCode}
-                className="border-purple-500/40 text-purple-200 hover:bg-purple-950/30 text-xs font-semibold py-2.5 h-auto"
+                className="border-purple-500/40 text-purple-200 hover:bg-purple-950/20"
               >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Reset Code
+                <RotateCcw className="h-4 w-4 mr-1.5" />
+                New Code
               </Button>
               <Button
-                variant="default"
-                size="sm"
                 asChild
-                className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2.5 h-auto"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
               >
                 <a href={`/tv?theme=${launchTheme}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
                   Launch TV
                 </a>
               </Button>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Host Profitability & P&L Dashboard */}
-          <div className="xl:col-span-2 bg-gradient-to-br from-gray-950 to-gray-900 border border-yellow-500/30 rounded-xl p-5 shadow-2xl backdrop-blur-md relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-3 border-b border-gray-800/80">
-              <div>
-                <h3 className="text-lg font-bold text-yellow-400 flex items-center gap-2">
-                  <Landmark className="h-5 w-5 text-yellow-500 animate-pulse" />
-                  HOST PROFITABILITY & SESSION P&L
-                </h3>
-                <p className="text-xs text-gray-400">Real-time house analytics & risk variance tracking</p>
-              </div>
+      {/* Session Stats and Profitability Modal */}
+      {isStatsOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-yellow-500/20 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+            <Button
+              onClick={() => setIsStatsOpen(false)}
+              className="absolute top-4 right-4 bg-transparent border-none text-gray-400 hover:text-white"
+              size="icon"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-black text-yellow-400 tracking-wider uppercase">SESSION PERFORMANCE & LEDGER</h3>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleClearSession}
+                onClick={() => {
+                  handleClearSession();
+                  setIsStatsOpen(false);
+                }}
                 disabled={sessionHistory.length === 0}
-                className="self-start sm:self-center border-red-500/30 text-red-400 hover:bg-red-950/20 text-xs font-semibold py-1.5 h-auto transition-colors"
+                className="border-red-500/30 text-red-400 hover:bg-red-950/20 text-xs font-semibold py-1 h-7 rounded-lg"
               >
                 <Trash2 className="h-3 w-3 mr-1.5" />
                 Reset Session
               </Button>
             </div>
 
-            {/* Grid of 3 key indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-              {/* Guaranteed Fees */}
-              <div className="bg-black/40 border border-gray-800/60 rounded-lg p-3 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Guaranteed Fees</span>
-                  <Coins className="h-3.5 w-3.5 text-blue-400" />
-                </div>
-                <div>
-                  <div className="text-xl font-black text-blue-400">
-                    {formatPotAmount(stats.totalGuaranteed)}
-                  </div>
-                  <p className="text-[9px] text-gray-500 mt-0.5">EV service rake (0% risk)</p>
-                </div>
+            {/* Grid of indicators */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-black/50 border border-gray-800 rounded-xl p-3 text-center">
+                <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase block mb-1">Guaranteed Rake Fees</span>
+                <span className="text-lg font-black text-blue-400">{formatPotAmount(stats.totalGuaranteed)}</span>
               </div>
-
-              {/* Realized Insurance P&L */}
-              <div className="bg-black/40 border border-gray-800/60 rounded-lg p-3 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Insurance Risk P&L</span>
-                  <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
-                </div>
-                <div>
-                  <div className={cn(
-                    "text-xl font-black",
-                    stats.totalRealized >= 0 ? "text-amber-400" : "text-red-400"
-                  )}>
-                    {stats.totalRealized >= 0 ? "+" : ""}{formatPotAmount(stats.totalRealized)}
-                  </div>
-                  <p className="text-[9px] text-gray-500 mt-0.5">Variance runout outcome</p>
-                </div>
+              <div className="bg-black/50 border border-gray-800 rounded-xl p-3 text-center">
+                <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase block mb-1">Insurance Risk P&L</span>
+                <span className={cn("text-lg font-black", stats.totalRealized >= 0 ? "text-amber-400" : "text-red-400")}>
+                  {stats.totalRealized >= 0 ? "+" : ""}{formatPotAmount(stats.totalRealized)}
+                </span>
               </div>
-
-              {/* Total Yield */}
-              <div className="bg-gradient-to-r from-yellow-950/20 to-yellow-900/10 border border-yellow-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute inset-0 bg-yellow-500/2 pointer-events-none"></div>
-                <div className="flex items-center justify-between mb-1 relative z-10">
-                  <span className="text-[10px] font-bold text-yellow-500 tracking-wider uppercase">Total Session Yield</span>
-                  <Award className="h-3.5 w-3.5 text-yellow-400" />
-                </div>
-                <div className="relative z-10">
-                  <div className={cn(
-                    "text-xl font-extrabold",
-                    stats.totalYield >= 0 ? "text-yellow-400" : "text-red-500"
-                  )}>
-                    {formatPotAmount(stats.totalYield)}
-                  </div>
-                  <p className="text-[9px] text-yellow-600/70 mt-0.5 font-medium">Accumulated house yield</p>
-                </div>
+              <div className="bg-black/50 border border-yellow-500/20 rounded-xl p-3 text-center">
+                <span className="text-[10px] font-bold text-yellow-500 tracking-wider uppercase block mb-1">Total Session Yield</span>
+                <span className={cn("text-lg font-black", stats.totalYield >= 0 ? "text-yellow-400" : "text-red-500")}>
+                  {formatPotAmount(stats.totalYield)}
+                </span>
               </div>
             </div>
 
-            {/* Hand History list */}
-            <div>
-              <div className="flex items-center gap-1.5 mb-2">
-                <History className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">Recent Runouts ({stats.totalHands})</span>
-              </div>
-              
+            {/* Table of Hand History */}
+            <div className="mt-4">
+              <span className="text-xs font-bold text-gray-300 uppercase tracking-wider block mb-2">RECENT RUNOUTS HISTORY</span>
               {sessionHistory.length === 0 ? (
                 <div className="text-center py-6 bg-black/20 rounded-lg border border-gray-800/40 text-gray-500 text-xs italic">
                   No completed hands tracked in this session yet.
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-lg border border-gray-800/60 bg-black/20">
+                <div className="overflow-x-auto rounded-lg border border-gray-800/60 bg-black/20 max-h-[250px] overflow-y-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-gray-900/60 text-gray-400 font-bold border-b border-gray-800/80">
+                      <tr className="bg-gray-900/60 text-gray-400 font-bold border-b border-gray-800/80 sticky top-0">
                         <th className="p-2 text-[10px] uppercase">Hand ID</th>
                         <th className="p-2 text-[10px] uppercase">Game</th>
                         <th className="p-2 text-[10px] uppercase text-right">Pot</th>
@@ -1110,7 +1268,7 @@ export default function PokerCalculator() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800/40">
-                      {sessionHistory.slice(0, 5).map((hand) => (
+                      {sessionHistory.map((hand) => (
                         <tr key={hand.handId} className="hover:bg-gray-800/25 transition-colors">
                           <td className="p-2 font-mono text-[10px] text-gray-400">
                             {hand.handId.substring(hand.handId.indexOf('_') + 1) || hand.handId}
@@ -1149,129 +1307,15 @@ export default function PokerCalculator() {
             </div>
           </div>
         </div>
-
-        {/* Main Game Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
-          {/* Community Cards */}
-          <div className="lg:col-span-2 order-1">
-            <CommunityCardsComponent
-              flop={communityCards.flop || []}
-              turn={communityCards.turn}
-              river={communityCards.river}
-              selectedCards={getAllSelectedCards()}
-              onCardSelect={handleCommunityCardSelect}
-              onCardDeselect={handleCommunityCardDeselect}
-              onBatchCardSelect={handleCommunityBatchSelect}
-              activeSlot={activeSlot}
-              onSlotClick={handleSlotClick}
-            />
-          </div>
-
-          {/* Burned Cards */}
-          <div className="order-2">
-            <BurnedCards
-              burnedCards={burnedCards}
-              selectedCards={getAllSelectedCards()}
-              onCardAdd={handleBurnedCardAdd}
-              onCardRemove={handleBurnedCardRemove}
-              onBatchCardSelect={handleBurnedBatchSelect}
-            />
-          </div>
-        </div>
-
-        {/* Player Hands */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
-          <PlayerHand
-            playerNumber={1}
-            gameVariant={gameVariant}
-            cards={player1Hand.cards}
-            selectedCards={getAllSelectedCards()}
-            onCardSelect={handlePlayer1CardSelect}
-            onCardDeselect={handlePlayer1CardDeselect}
-            onBatchCardSelect={handlePlayer1BatchSelect}
-            onCashoutStatusChange={handleCashoutStatusChange}
-            equity={equityResult?.player1Equity || 0}
-            moneyEquity={equityResult?.player1MoneyEquity || 0}
-            feePercentage={feePercentage}
-            resetCashoutStatus={resetCashoutTrigger}
-            activeSlot={activeSlot}
-            onSlotClick={handleSlotClick}
-          />
-          <PlayerHand
-            playerNumber={2}
-            gameVariant={gameVariant}
-            cards={player2Hand.cards}
-            selectedCards={getAllSelectedCards()}
-            onCardSelect={handlePlayer2CardSelect}
-            onCardDeselect={handlePlayer2CardDeselect}
-            onBatchCardSelect={handlePlayer2BatchSelect}
-            onCashoutStatusChange={handleCashoutStatusChange}
-            equity={equityResult?.player2Equity || 0}
-            moneyEquity={equityResult?.player2MoneyEquity || 0}
-            feePercentage={feePercentage}
-            resetCashoutStatus={resetCashoutTrigger}
-            activeSlot={activeSlot}
-            onSlotClick={handleSlotClick}
-          />
-        </div>
-
-        {/* Dealer Keypad */}
-        <div className="mb-6">
-          <DealerKeypad
-            selectedCards={getAllSelectedCards()}
-            onCardSelect={handleCardSelectFromKeypad}
-            onCardClear={handleClearActiveSlot}
-            activeSlotName={getActiveSlotName()}
-          />
-        </div>
-
-        {/* Equity Display */}
-        <EquityDisplay
-          result={equityResult}
-          isCalculating={calculateEquityMutation.isPending}
-          onRecalculate={handleCalculateEquity}
-          onSave={handleSave}
-          onReset={handleReset}
-          burnedCardsCount={burnedCards.length}
-        />
-
-        {/* Action Buttons */}
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-          <Button
-            onClick={handleCalculateEquity}
-            disabled={!canCalculate() || calculateEquityMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 min-h-[48px] text-base"
-          >
-            <Calculator className="h-4 w-4 mr-2" />
-            {calculateEquityMutation.isPending ? 'Calculating...' : 'Calculate'}
-          </Button>
-          
-          <Button
-            onClick={handleFinishHand}
-            disabled={!canFinishHand()}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 min-h-[48px] text-base"
-          >
-            Finish Hand
-          </Button>
-          
-          <Button
-            onClick={handleReset}
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-3 min-h-[48px] text-base"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset
-          </Button>
-        </div>
-
-        {/* Pot Amount Modal */}
-        <PotAmountModal
-          isOpen={isPotModalOpen}
-          onClose={() => setIsPotModalOpen(false)}
-          currentAmount={potAmount}
-          onAmountChange={setPotAmount}
-        />
-      </div>
+      )}
+      
+      {/* Existing Pot Amount Modal */}
+      <PotAmountModal
+        isOpen={isPotModalOpen}
+        onClose={() => setIsPotModalOpen(false)}
+        currentAmount={potAmount}
+        onAmountChange={setPotAmount}
+      />
     </div>
   );
 }
