@@ -26,6 +26,7 @@ export class DatabaseStorage implements IStorage {
         player2MoneyEquity: result.player2MoneyEquity,
         iterations: result.iterations,
         calculationTime: result.calculationTime,
+        photo: calculation.photo,
       })
       .returning();
     
@@ -49,6 +50,7 @@ export class DatabaseStorage implements IStorage {
         player2Hand: calc.player2Hand as any,
         potAmount: calc.potAmount,
         burnedCards: [], // Not stored in database currently
+        photo: calc.photo || undefined,
       },
       result: {
         player1Equity: calc.player1Equity,
@@ -91,6 +93,7 @@ export class MemStorage implements IStorage {
       player2MoneyEquity: result.player2MoneyEquity,
       iterations: result.iterations,
       calculationTime: result.calculationTime,
+      photo: calculation.photo || null,
       createdAt: new Date(),
     };
     this.calculations.set(id.toString(), newCalc);
@@ -108,6 +111,7 @@ export class MemStorage implements IStorage {
         player2Hand: calc.player2Hand as any,
         potAmount: calc.potAmount,
         burnedCards: [],
+        photo: calc.photo || undefined,
       },
       result: {
         player1Equity: calc.player1Equity,

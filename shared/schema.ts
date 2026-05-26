@@ -39,6 +39,7 @@ export const equityCalculationSchema = z.object({
   player2Hand: handSchema,
   potAmount: z.number().min(0),
   burnedCards: z.array(cardSchema).default([]),
+  photo: z.string().optional(), // Base64 hand photo
 });
 
 export type EquityCalculation = z.infer<typeof equityCalculationSchema>;
@@ -69,6 +70,7 @@ export const calculations = pgTable('calculations', {
   player2MoneyEquity: real('player2_money_equity').notNull(),
   iterations: integer('iterations').notNull(),
   calculationTime: real('calculation_time').notNull(),
+  photo: text('photo'), // Optional base64 hand photo
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

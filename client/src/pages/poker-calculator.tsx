@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card, GameVariant, CommunityCards, Hand, EquityResult } from "@shared/schema";
 import { CommunityCards as CommunityCardsComponent } from "@/components/community-cards";
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X, Camera, Image, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
@@ -33,6 +33,7 @@ interface SessionHand {
   player2Fee: number;
   winner: 1 | 2 | 'split' | 'unknown';
   houseProfit: number;
+  photo?: string;
   timestamp: string;
 }
 
@@ -67,6 +68,67 @@ export default function PokerCalculator() {
 
   const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
   const [sessionHistory, setSessionHistory] = useState<SessionHand[]>([]);
+
+  // Photo capture states for post facto checking
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [selectedHandPhoto, setSelectedHandPhoto] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const startCamera = async () => {
+    setCameraError(null);
+    setIsCameraActive(true);
+    setCapturedPhoto(null);
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: 640, height: 480 }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.play().catch(err => console.error("Error playing video:", err));
+      }
+    } catch (err: any) {
+      console.error("Camera access error:", err);
+      setCameraError(err.message || "Could not access table camera. Please use file snap fallback.");
+      setIsCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth || 640;
+    canvas.height = videoRef.current.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      setCapturedPhoto(dataUrl);
+      stopCamera();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapturedPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const { toast } = useToast();
 
@@ -722,6 +784,19 @@ export default function PokerCalculator() {
       return;
     }
 
+    setCapturedPhoto(null);
+    setIsPhotoModalOpen(true);
+    // Trigger video stream initialization
+    setTimeout(() => {
+      startCamera();
+    }, 100);
+  };
+
+  const completeFinishHand = (photoBase64?: string) => {
+    // Stop camera if running
+    stopCamera();
+    setIsPhotoModalOpen(false);
+
     // Determine hand P&L metrics
     let p1Fee = 0;
     let p2Fee = 0;
@@ -791,13 +866,26 @@ export default function PokerCalculator() {
       player2Fee: p2Fee,
       winner,
       houseProfit,
+      photo: photoBase64,
       timestamp: new Date().toISOString()
     };
 
     const updatedHistory = [newHand, ...sessionHistory];
     saveSessionHistory(updatedHistory);
 
-    // Save hand to database/storage (optional API backup)
+    // Save hand to database/storage (finalized calculation mutate to store photo in database)
+    if (photoBase64 && canCalculate()) {
+      calculateEquityMutation.mutate({
+        gameVariant,
+        communityCards,
+        player1Hand,
+        player2Hand,
+        potAmount,
+        burnedCards,
+        photo: photoBase64
+      });
+    }
+
     const handData = {
       handId: newHand.handId,
       gameVariant,
@@ -808,6 +896,7 @@ export default function PokerCalculator() {
       player2Hand,
       burnedCards,
       equityResult,
+      photoAttached: !!photoBase64,
       timestamp: newHand.timestamp,
       status: 'completed'
     };
@@ -941,10 +1030,39 @@ export default function PokerCalculator() {
 
         {/* Current Hand / Variant details */}
         <div className="col-span-6 bg-black/40 border border-gray-800 rounded-xl p-2.5 flex justify-around items-center text-center">
-          <div>
-            <div className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">GAME TYPE</div>
-            <div className="text-sm font-black text-white mt-0.5 uppercase">
-              {gameVariant === 'nlh' ? "Hold'em" : gameVariant.toUpperCase()}
+          <div className="flex flex-col items-center">
+            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest block mb-1">GAME TYPE</span>
+            <div className="flex bg-black/55 p-0.5 rounded-lg border border-gray-800/80 gap-0.5">
+              <button
+                type="button"
+                onClick={() => setGameVariant('nlh')}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'nlh' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                )}
+              >
+                NLH
+              </button>
+              <button
+                type="button"
+                onClick={() => setGameVariant('plo4')}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'plo4' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                )}
+              >
+                PLO4
+              </button>
+              <button
+                type="button"
+                onClick={() => setGameVariant('plo5')}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'plo5' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                )}
+              >
+                PLO5
+              </button>
             </div>
           </div>
           <div className="w-[1px] bg-gray-800 h-6"></div>
@@ -1324,8 +1442,19 @@ export default function PokerCalculator() {
                     <tbody className="divide-y divide-gray-800/40">
                       {sessionHistory.map((hand) => (
                         <tr key={hand.handId} className="hover:bg-gray-800/25 transition-colors">
-                          <td className="p-2 font-mono text-[10px] text-gray-400">
-                            {hand.handId.substring(hand.handId.indexOf('_') + 1) || hand.handId}
+                          <td className="p-2 font-mono text-[10px] text-gray-400 flex items-center gap-1.5">
+                            <span>{hand.handId.substring(hand.handId.indexOf('_') + 1) || hand.handId}</span>
+                            {hand.photo && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => setSelectedHandPhoto(hand.photo || null)}
+                                className="h-5 w-5 p-0 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 rounded"
+                                title="View Captured Hand Photo"
+                              >
+                                <Camera className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                           </td>
                           <td className="p-2 font-bold text-gray-300">
                             {hand.gameVariant === 'nlh' ? "NLH" : hand.gameVariant === 'plo4' ? "PLO4" : "PLO5"}
@@ -1358,6 +1487,168 @@ export default function PokerCalculator() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Photo Capture Modal */}
+      {isPhotoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-yellow-500/20 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <h3 className="text-sm font-black text-yellow-400 tracking-wider uppercase mb-2 text-center flex items-center justify-center gap-1.5">
+              <Camera className="h-4 w-4 text-yellow-400" />
+              SNAP TABLE PROOF
+            </h3>
+            
+            <div className="relative aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 flex flex-col items-center justify-center">
+              {capturedPhoto ? (
+                <img 
+                  src={capturedPhoto} 
+                  alt="Captured Hand Preview" 
+                  className="w-full h-full object-contain"
+                />
+              ) : isCameraActive ? (
+                <div className="relative w-full h-full">
+                  <video 
+                    ref={videoRef} 
+                    playsInline 
+                    muted 
+                    className="w-full h-full object-cover" 
+                  />
+                  {/* Camera Bounding Box Overlay */}
+                  <div className="absolute inset-4 border-2 border-dashed border-green-500/50 rounded-lg pointer-events-none flex items-center justify-center">
+                    <span className="text-[10px] text-green-400/70 font-mono tracking-widest uppercase bg-black/40 px-2 py-0.5 rounded">ALIGN POKER CARDS</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center p-4 space-y-3">
+                  <Camera className="h-10 w-10 text-gray-600 mx-auto" />
+                  <p className="text-xs text-gray-400 max-w-[280px]">
+                    Table camera not running. Start stream or capture directly from tablet roll.
+                  </p>
+                  <Button 
+                    onClick={startCamera}
+                    size="sm"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-xs"
+                  >
+                    Start Live Stream
+                  </Button>
+                </div>
+              )}
+
+              {cameraError && !capturedPhoto && (
+                <p className="absolute bottom-2 left-2 right-2 text-[10px] text-red-400 text-center bg-black/80 px-2 py-1 rounded border border-red-500/20">
+                  {cameraError}
+                </p>
+              )}
+            </div>
+
+            {/* Quick Actions Panel */}
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {isCameraActive && !capturedPhoto && (
+                  <Button
+                    onClick={capturePhoto}
+                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-xs h-10"
+                  >
+                    <Camera className="h-4 w-4 mr-1.5 animate-pulse" />
+                    SNAP PHOTO
+                  </Button>
+                )}
+
+                {capturedPhoto && (
+                  <Button
+                    onClick={() => {
+                      setCapturedPhoto(null);
+                      startCamera();
+                    }}
+                    variant="outline"
+                    className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 text-xs h-10"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1.5" />
+                    Retake Snaps
+                  </Button>
+                )}
+
+                {/* Always show File Input fallback for extreme tablet reliability */}
+                <label className="flex-1 flex items-center justify-center border border-dashed border-gray-700 hover:border-yellow-500/50 hover:bg-gray-800/20 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-colors text-xs font-semibold h-10">
+                  <Image className="h-4 w-4 mr-1.5" />
+                  Tablet snap fallback
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <div className="w-full bg-gray-800/30 h-[1px] my-1"></div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => {
+                    stopCamera();
+                    setIsPhotoModalOpen(false);
+                    completeFinishHand(capturedPhoto || undefined);
+                  }}
+                  className={cn(
+                    "font-bold text-xs h-11 transition-all",
+                    capturedPhoto 
+                      ? "bg-green-600 hover:bg-green-700 text-white shadow-md shadow-green-950/20" 
+                      : "bg-gray-800 hover:bg-gray-700 text-gray-400"
+                  )}
+                >
+                  <Check className="h-4 w-4 mr-1.5" />
+                  {capturedPhoto ? "SAVE & FINISH" : "SKIP & FINISH"}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    stopCamera();
+                    setIsPhotoModalOpen(false);
+                  }}
+                  className="border-gray-800 hover:bg-gray-800 text-gray-400 font-bold text-xs h-11"
+                >
+                  <X className="h-4 w-4 mr-1.5" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hand Photo Viewer Modal */}
+      {selectedHandPhoto && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelectedHandPhoto(null)}>
+          <div 
+            className="bg-gray-950 border-2 border-yellow-500/30 rounded-2xl max-w-lg w-full p-4 space-y-4 shadow-2xl relative animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-gray-800/80 pb-2">
+              <span className="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Camera className="h-4 w-4" />
+                POST FACTO TABLE PROOF
+              </span>
+              <Button 
+                onClick={() => setSelectedHandPhoto(null)}
+                size="sm"
+                variant="outline"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800 h-7 text-xs font-semibold py-1 rounded-lg"
+              >
+                Close View
+              </Button>
+            </div>
+            <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-800 bg-black flex items-center justify-center">
+              <img 
+                src={selectedHandPhoto} 
+                alt="Poker Table Hand Proof" 
+                className="max-h-full max-w-full object-contain"
+              />
             </div>
           </div>
         </div>
