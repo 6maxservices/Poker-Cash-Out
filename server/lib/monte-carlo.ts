@@ -7,7 +7,7 @@ export function calculateEquity(
   player1Hand: Hand,
   player2Hand: Hand,
   potAmount: number,
-  iterations: number = 20000,
+  iterations: number = 5000,
   burnedCards: Card[] = []
 ): EquityResult {
   const startTime = Date.now();

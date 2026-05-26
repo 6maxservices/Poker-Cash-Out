@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         calculationData.player1Hand,
         calculationData.player2Hand,
         calculationData.potAmount,
-        20000,
+        calculationData.gameVariant === 'nlh' ? 5000 : 2500,
         calculationData.burnedCards || []
       );
 
