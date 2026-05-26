@@ -1119,16 +1119,15 @@ export default function PokerCalculator() {
             <div className="space-y-4">
               <div>
                 <Label className="text-xs font-bold text-gray-400 block mb-1">GAME VARIANT</Label>
-                <Select value={gameVariant} onValueChange={(value: GameVariant) => setGameVariant(value)}>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="nlh">No Limit Hold'em</SelectItem>
-                    <SelectItem value="plo4">PLO4 (4 Cards)</SelectItem>
-                    <SelectItem value="plo5">PLO5 (5 Cards)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select 
+                  value={gameVariant} 
+                  onChange={(e) => setGameVariant(e.target.value as GameVariant)}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500 h-10"
+                >
+                  <option value="nlh">No Limit Hold'em</option>
+                  <option value="plo4">PLO4 (4 Cards)</option>
+                  <option value="plo5">PLO5 (5 Cards)</option>
+                </select>
               </div>
 
               <div>
@@ -1201,19 +1200,18 @@ export default function PokerCalculator() {
                 </p>
               </div>
 
-              <div>
+               <div>
                 <Label className="text-xs font-bold text-gray-400 block mb-1">STREAM LAYOUT THEME</Label>
-                <Select value={launchTheme} onValueChange={(value: any) => setLaunchTheme(value)}>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                    <SelectItem value="gold">VIP Gold Theme</SelectItem>
-                    <SelectItem value="felt">Vegas Green Felt</SelectItem>
-                    <SelectItem value="cyber">Cyber Neon Theme</SelectItem>
-                    <SelectItem value="overlay">OBS Transparent Overlay</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select 
+                  value={launchTheme} 
+                  onChange={(e) => setLaunchTheme(e.target.value as any)}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 h-10"
+                >
+                  <option value="gold">VIP Gold Theme</option>
+                  <option value="felt">Vegas Green Felt</option>
+                  <option value="cyber">Cyber Neon Theme</option>
+                  <option value="overlay">OBS Transparent Overlay</option>
+                </select>
               </div>
             </div>
 

@@ -11,6 +11,9 @@ export const db = (() => {
     console.warn("⚠️ DATABASE_URL is not set. Persistent database features will be disabled; falling back to in-memory storage.");
     return null;
   }
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   return drizzle({ client: pool, schema });
 })();
