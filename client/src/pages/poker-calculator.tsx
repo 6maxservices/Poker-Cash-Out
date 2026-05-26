@@ -63,6 +63,7 @@ export default function PokerCalculator() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTvOpen, setIsTvOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isKeypadOpen, setIsKeypadOpen] = useState(false);
 
   const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
   const [sessionHistory, setSessionHistory] = useState<SessionHand[]>([]);
@@ -143,6 +144,7 @@ export default function PokerCalculator() {
 
   const handleSlotClick = useCallback((target: SlotTarget) => {
     setActiveSlot(target);
+    setIsKeypadOpen(true);
   }, []);
 
   const handleCardSelectFromKeypad = useCallback((card: Card) => {
@@ -201,6 +203,9 @@ export default function PokerCalculator() {
     // Auto advance
     const nextSlot = getNextSequentialSlot(activeSlot, gameVariant);
     setActiveSlot(nextSlot);
+    if (!nextSlot) {
+      setIsKeypadOpen(false);
+    }
   }, [activeSlot, gameVariant, getAllSelectedCards, toast, getNextSequentialSlot]);
 
   const handleClearActiveSlot = useCallback(() => {
@@ -1053,15 +1058,50 @@ export default function PokerCalculator() {
 
       </div>
 
-      {/* Bottom Dealer Keyboard (Height: ~180px, flex-shrink-0) */}
-      <div className="flex-shrink-0 mt-2 bg-black/50 border border-gray-800/80 rounded-2xl p-2">
-        <DealerKeypad
-          selectedCards={getAllSelectedCards()}
-          onCardSelect={handleCardSelectFromKeypad}
-          onCardClear={handleClearActiveSlot}
-          activeSlotName={getActiveSlotName()}
-        />
-      </div>
+      {/* Bottom Dealer Keyboard Overlay Sheet */}
+      {isKeypadOpen && (
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsKeypadOpen(false)}>
+          <div 
+            className="fixed bottom-0 left-0 right-0 z-50 bg-gray-950 border-t border-yellow-500/20 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] transition-transform duration-300 transform translate-y-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-3 px-1">
+              <span className="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Calculator className="h-4 w-4 text-yellow-400" />
+                Quick Deal Pad — Tap cards to deal instantly ({getActiveSlotName() || "Select Slot"})
+              </span>
+              <Button 
+                onClick={() => setIsKeypadOpen(false)}
+                size="sm"
+                variant="outline"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800 h-7 text-xs font-semibold py-1 rounded-lg"
+              >
+                Close Pad
+              </Button>
+            </div>
+            
+            <DealerKeypad
+              selectedCards={getAllSelectedCards()}
+              onCardSelect={handleCardSelectFromKeypad}
+              onCardClear={handleClearActiveSlot}
+              activeSlotName={getActiveSlotName()}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Floating Keyboard Trigger at the bottom */}
+      {!isKeypadOpen && (
+        <div className="flex-shrink-0 flex justify-center py-2">
+          <Button
+            onClick={() => setIsKeypadOpen(true)}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-6 py-4 rounded-xl shadow-lg flex items-center gap-2 text-xs sm:text-sm animate-pulse"
+          >
+            <Calculator className="h-4 w-4" />
+            OPEN QUICK DEAL PAD ({getActiveSlotName() || "Select Slot"})
+          </Button>
+        </div>
+      )}
 
       {/* Settings Modal Overlay */}
       {isSettingsOpen && (
