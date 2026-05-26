@@ -319,6 +319,7 @@ export default function PokerCalculator() {
           player2Hand: player2Hand.cards,
           player1CashoutStatus: player1CashoutStatus,
           player2CashoutStatus: player2CashoutStatus,
+          feePercentage,
           communityCards: {
             flop: communityCards.flop,
             turn: communityCards.turn,
@@ -403,6 +404,7 @@ export default function PokerCalculator() {
           player2Hand: player2Hand.cards,
           player1CashoutStatus: player1CashoutStatus,
           player2CashoutStatus: player2CashoutStatus,
+          feePercentage,
           communityCards: {
             flop: communityCards.flop,
             turn: communityCards.turn,
@@ -433,6 +435,7 @@ export default function PokerCalculator() {
         player2Hand: player2Hand.cards,
         player1CashoutStatus: player1CashoutStatus,
         player2CashoutStatus: player2CashoutStatus,
+        feePercentage,
         communityCards: {
           flop: communityCards.flop,
           turn: communityCards.turn,
@@ -462,6 +465,7 @@ export default function PokerCalculator() {
         player2Hand: player2Hand.cards,
         player1CashoutStatus: player1CashoutStatus,
         player2CashoutStatus: player2CashoutStatus,
+        feePercentage,
         communityCards: {
           flop: communityCards.flop,
           turn: communityCards.turn,

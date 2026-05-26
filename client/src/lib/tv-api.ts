@@ -18,6 +18,7 @@ export interface TVGameState {
     turn: any;
     river: any;
   };
+  feePercentage?: number;
   lastUpdated: number;
 }
 

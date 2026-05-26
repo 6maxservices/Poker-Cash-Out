@@ -79,14 +79,20 @@ export default function TVDisplay() {
   useEffect(() => {
     const p1Cashed = gameState?.player1CashoutStatus === 'approved';
     const p2Cashed = gameState?.player2CashoutStatus === 'approved';
+    const feePct = gameState?.feePercentage ?? 5;
 
     if (p1Cashed && p2Cashed) {
+      const p1Money = gameState?.player1MoneyEquity || 0;
+      const p1Net = p1Money - (p1Money * (feePct / 100));
+      const p2Money = gameState?.player2MoneyEquity || 0;
+      const p2Net = p2Money - (p2Money * (feePct / 100));
+
       setActiveCelebration({
         isDouble: true,
         player1Name: gameState?.player1Name || 'Player 1',
-        player1Amount: gameState?.player1MoneyEquity || 0,
+        player1Amount: p1Net,
         player2Name: gameState?.player2Name || 'Player 2',
-        player2Amount: gameState?.player2MoneyEquity || 0,
+        player2Amount: p2Net,
         timestamp: Date.now()
       });
 
@@ -104,14 +110,15 @@ export default function TVDisplay() {
       const playerName = isP1 
         ? (gameState?.player1Name || 'Player 1') 
         : (gameState?.player2Name || 'Player 2');
-      const cashoutAmount = isP1 
+      const money = isP1 
         ? (gameState?.player1MoneyEquity || 0) 
         : (gameState?.player2MoneyEquity || 0);
+      const net = money - (money * (feePct / 100));
 
       setActiveCelebration({
         isDouble: false,
         singlePlayerName: playerName,
-        singleAmount: cashoutAmount,
+        singleAmount: net,
         timestamp: Date.now()
       });
 
@@ -775,9 +782,9 @@ export default function TVDisplay() {
                   {/* Bottom Stats */}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-black/40 border border-gray-800/80 rounded-xl p-3 text-center">
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">ESTIMATED EV VALUE</span>
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">ESTIMATED PAYOUT</span>
                       <span className="text-lg font-black text-yellow-400">
-                        {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity) : '$0'}
+                        {gameState.player1MoneyEquity ? formatCurrency(gameState.player1MoneyEquity - (gameState.player1MoneyEquity * ((gameState.feePercentage ?? 5) / 100))) : '$0'}
                       </span>
                     </div>
 
@@ -853,9 +860,9 @@ export default function TVDisplay() {
                   {/* Bottom Stats */}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-black/40 border border-gray-800/80 rounded-xl p-3 text-center">
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">ESTIMATED EV VALUE</span>
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5">ESTIMATED PAYOUT</span>
                       <span className="text-lg font-black text-yellow-400">
-                        {gameState.player2MoneyEquity ? formatCurrency(gameState.player2MoneyEquity) : '$0'}
+                        {gameState.player2MoneyEquity ? formatCurrency(gameState.player2MoneyEquity - (gameState.player2MoneyEquity * ((gameState.feePercentage ?? 5) / 100))) : '$0'}
                       </span>
                     </div>
 

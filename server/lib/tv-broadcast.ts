@@ -20,6 +20,7 @@ export interface TVGameState {
     turn: any;
     river: any;
   };
+  feePercentage?: number;
   lastUpdated: number;
 }
 
@@ -45,6 +46,7 @@ class TVBroadcastManager extends EventEmitter {
       player1CashoutStatus: null,
       player2CashoutStatus: null,
       communityCards: { flop: [], turn: null, river: null },
+      feePercentage: 5,
       lastUpdated: Date.now()
     };
     this.accessCode = this.generateAccessCode();
