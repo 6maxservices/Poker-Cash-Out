@@ -72,52 +72,7 @@ export default function PokerCalculator() {
   // Photo capture states for post facto checking
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
   const [selectedHandPhoto, setSelectedHandPhoto] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  const startCamera = async () => {
-    setCameraError(null);
-    setIsCameraActive(true);
-    setCapturedPhoto(null);
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: 640, height: 480 }
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play().catch(err => console.error("Error playing video:", err));
-      }
-    } catch (err: any) {
-      console.error("Camera access error:", err);
-      setCameraError(err.message || "Could not access table camera. Please use file snap fallback.");
-      setIsCameraActive(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraActive(false);
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth || 640;
-    canvas.height = videoRef.current.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      setCapturedPhoto(dataUrl);
-      stopCamera();
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -786,15 +741,9 @@ export default function PokerCalculator() {
 
     setCapturedPhoto(null);
     setIsPhotoModalOpen(true);
-    // Trigger video stream initialization
-    setTimeout(() => {
-      startCamera();
-    }, 100);
   };
 
   const completeFinishHand = (photoBase64?: string) => {
-    // Stop camera if running
-    stopCamera();
     setIsPhotoModalOpen(false);
 
     // Determine hand P&L metrics
@@ -1014,31 +963,31 @@ export default function PokerCalculator() {
         {/* Pot Size Card */}
         <div 
           onClick={() => setIsPotModalOpen(true)}
-          className="col-span-6 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-2.5 flex items-center justify-between cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all shadow-md"
+          className="col-span-4 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-xl p-2.5 flex items-center justify-between cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all shadow-md h-[52px]"
         >
           <div className="flex items-center space-x-2">
-            <DollarSign className="h-5 w-5 text-white" />
+            <DollarSign className="h-4 w-4 text-white" />
             <div>
-              <div className="text-[9px] font-bold text-yellow-100 uppercase tracking-widest leading-none">ACTIVE POT</div>
-              <div className="text-xl sm:text-2xl font-black text-white leading-none mt-0.5">
+              <div className="text-[8px] font-bold text-yellow-100 uppercase tracking-widest leading-none">ACTIVE POT</div>
+              <div className="text-base sm:text-lg font-black text-white leading-none mt-0.5">
                 {formatPotAmount(potAmount)}
               </div>
             </div>
           </div>
-          <span className="text-[10px] font-bold bg-white/20 text-white rounded px-1.5 py-0.5">EDIT</span>
+          <span className="text-[8px] font-bold bg-white/20 text-white rounded px-1 py-0.5">EDIT</span>
         </div>
 
         {/* Current Hand / Variant details */}
-        <div className="col-span-6 bg-black/40 border border-gray-800 rounded-xl p-2.5 flex justify-around items-center text-center">
+        <div className="col-span-4 bg-black/40 border border-gray-800 rounded-xl p-1.5 flex justify-around items-center text-center h-[52px]">
           <div className="flex flex-col items-center">
-            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest block mb-1">GAME TYPE</span>
-            <div className="flex bg-black/55 p-0.5 rounded-lg border border-gray-800/80 gap-0.5">
+            <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">GAME TYPE</span>
+            <div className="flex bg-black/55 p-0.5 rounded-lg border border-gray-800/85 gap-0.5">
               <button
                 type="button"
                 onClick={() => setGameVariant('nlh')}
                 className={cn(
-                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
-                  gameVariant === 'nlh' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                  "px-1.5 py-0.5 text-[9px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'nlh' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white"
                 )}
               >
                 NLH
@@ -1047,8 +996,8 @@ export default function PokerCalculator() {
                 type="button"
                 onClick={() => setGameVariant('plo4')}
                 className={cn(
-                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
-                  gameVariant === 'plo4' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                  "px-1.5 py-0.5 text-[9px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'plo4' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white"
                 )}
               >
                 PLO4
@@ -1057,8 +1006,8 @@ export default function PokerCalculator() {
                 type="button"
                 onClick={() => setGameVariant('plo5')}
                 className={cn(
-                  "px-2 py-0.5 text-[10px] font-black rounded uppercase transition-all select-none",
-                  gameVariant === 'plo5' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-gray-800/30"
+                  "px-1.5 py-0.5 text-[9px] font-black rounded uppercase transition-all select-none",
+                  gameVariant === 'plo5' ? "bg-yellow-500 text-black shadow-sm" : "text-gray-400 hover:text-white"
                 )}
               >
                 PLO5
@@ -1067,8 +1016,8 @@ export default function PokerCalculator() {
           </div>
           <div className="w-[1px] bg-gray-800 h-6"></div>
           <div>
-            <div className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">FEE RATE</div>
-            <div className="text-sm font-black text-yellow-400 mt-0.5">
+            <div className="text-[7px] font-bold text-gray-500 uppercase tracking-widest">FEE RATE</div>
+            <div className="text-xs font-black text-yellow-400 mt-0.5">
               {feePercentage}%
             </div>
           </div>
@@ -1076,9 +1025,30 @@ export default function PokerCalculator() {
           <Button
             onClick={handleNewHand}
             size="sm"
-            className="bg-green-600 hover:bg-green-700 text-white font-bold h-7 text-[10px] px-2.5 py-0 rounded-lg"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold h-6 text-[9px] px-2 py-0 rounded-lg"
           >
             New Hand
+          </Button>
+        </div>
+
+        {/* Main Dealer Actions Card */}
+        <div className="col-span-4 bg-gradient-to-r from-gray-900 to-slate-900 border border-yellow-500/20 rounded-xl p-1.5 flex gap-2 items-center justify-between h-[52px]">
+          <Button
+            onClick={handleCalculateEquity}
+            disabled={!canCalculate() || calculateEquityMutation.isPending}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold h-8 text-[10px] px-2"
+          >
+            <Calculator className="h-3 w-3 mr-1" />
+            Calculate
+          </Button>
+          
+          <Button
+            onClick={handleFinishHand}
+            disabled={!canFinishHand()}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-black h-8 text-[10px] px-2 shadow-lg shadow-green-950/20"
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Finish Hand
           </Button>
         </div>
       </div>
@@ -1125,9 +1095,9 @@ export default function PokerCalculator() {
             />
           </div>
 
-          {/* Burned Cards & Actions wrapper */}
+          {/* Burned Cards wrapper */}
           <div className="flex-grow flex flex-col justify-between gap-2 overflow-hidden">
-            <div className="bg-black/30 border border-gray-800/60 rounded-2xl p-2 flex flex-col justify-center">
+            <div className="bg-black/30 border border-gray-800/60 rounded-2xl p-2 flex flex-col justify-center flex-grow">
               <BurnedCards
                 burnedCards={burnedCards}
                 selectedCards={getAllSelectedCards()}
@@ -1135,34 +1105,6 @@ export default function PokerCalculator() {
                 onCardRemove={handleBurnedCardRemove}
                 onBatchCardSelect={handleBurnedBatchSelect}
               />
-            </div>
-
-            {/* Micro Equity display & Actions */}
-            <div className="bg-black/40 border border-gray-800/80 rounded-2xl p-2 flex flex-col justify-between">
-              <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-1">
-                <span>EQUITY RESULTS</span>
-                {calculateEquityMutation.isPending && <span className="text-yellow-400 animate-pulse">Calculating...</span>}
-              </div>
-
-              {/* Central action controls */}
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <Button
-                  onClick={handleCalculateEquity}
-                  disabled={!canCalculate() || calculateEquityMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs"
-                >
-                  <Calculator className="h-3.5 w-3.5 mr-1" />
-                  Calculate
-                </Button>
-                
-                <Button
-                  onClick={handleFinishHand}
-                  disabled={!canFinishHand()}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold h-9 text-xs"
-                >
-                  Finish Hand
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -1508,89 +1450,54 @@ export default function PokerCalculator() {
                   alt="Captured Hand Preview" 
                   className="w-full h-full object-contain"
                 />
-              ) : isCameraActive ? (
-                <div className="relative w-full h-full">
-                  <video 
-                    ref={videoRef} 
-                    playsInline 
-                    muted 
-                    className="w-full h-full object-cover" 
-                  />
-                  {/* Camera Bounding Box Overlay */}
-                  <div className="absolute inset-4 border-2 border-dashed border-green-500/50 rounded-lg pointer-events-none flex items-center justify-center">
-                    <span className="text-[10px] text-green-400/70 font-mono tracking-widest uppercase bg-black/40 px-2 py-0.5 rounded">ALIGN POKER CARDS</span>
-                  </div>
-                </div>
               ) : (
                 <div className="text-center p-4 space-y-3">
                   <Camera className="h-10 w-10 text-gray-600 mx-auto" />
                   <p className="text-xs text-gray-400 max-w-[280px]">
-                    Table camera not running. Start stream or capture directly from tablet roll.
+                    Table camera ready. Tap below to capture hand proof directly using your tablet's native camera.
                   </p>
-                  <Button 
-                    onClick={startCamera}
-                    size="sm"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-xs"
-                  >
-                    Start Live Stream
-                  </Button>
+                  
+                  {/* Native Tablet Camera Trigger */}
+                  <label htmlFor="table-snap-camera-input" className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-black px-4 py-2.5 rounded-lg cursor-pointer transition-all duration-155 text-xs shadow-md">
+                    📷 OPEN NATIVE CAMERA
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      id="table-snap-camera-input"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
-              )}
-
-              {cameraError && !capturedPhoto && (
-                <p className="absolute bottom-2 left-2 right-2 text-[10px] text-red-400 text-center bg-black/80 px-2 py-1 rounded border border-red-500/20">
-                  {cameraError}
-                </p>
               )}
             </div>
 
             {/* Quick Actions Panel */}
             <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                {isCameraActive && !capturedPhoto && (
-                  <Button
-                    onClick={capturePhoto}
-                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-xs h-10"
-                  >
-                    <Camera className="h-4 w-4 mr-1.5 animate-pulse" />
-                    SNAP PHOTO
-                  </Button>
-                )}
-
-                {capturedPhoto && (
-                  <Button
-                    onClick={() => {
-                      setCapturedPhoto(null);
-                      startCamera();
-                    }}
-                    variant="outline"
-                    className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 text-xs h-10"
-                  >
+              {capturedPhoto && (
+                <div className="flex gap-2">
+                  {/* Retake using device native camera */}
+                  <label htmlFor="table-snap-camera-retake" className="flex-1 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-colors text-xs font-semibold h-10 border border-gray-700">
                     <RotateCcw className="h-4 w-4 mr-1.5" />
-                    Retake Snaps
-                  </Button>
-                )}
-
-                {/* Always show File Input fallback for extreme tablet reliability */}
-                <label className="flex-1 flex items-center justify-center border border-dashed border-gray-700 hover:border-yellow-500/50 hover:bg-gray-800/20 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-colors text-xs font-semibold h-10">
-                  <Image className="h-4 w-4 mr-1.5" />
-                  Tablet snap fallback
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
+                    Retake Snap
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      id="table-snap-camera-retake"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
 
               <div className="w-full bg-gray-800/30 h-[1px] my-1"></div>
 
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => {
-                    stopCamera();
                     setIsPhotoModalOpen(false);
                     completeFinishHand(capturedPhoto || undefined);
                   }}
@@ -1608,7 +1515,6 @@ export default function PokerCalculator() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    stopCamera();
                     setIsPhotoModalOpen(false);
                   }}
                   className="border-gray-800 hover:bg-gray-800 text-gray-400 font-bold text-xs h-11"
