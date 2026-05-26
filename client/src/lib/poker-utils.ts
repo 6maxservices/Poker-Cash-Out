@@ -22,11 +22,13 @@ export function isRedSuit(suit: Suit): boolean {
 }
 
 export function formatCurrency(amount: number): string {
+  const roundedUp = Math.ceil(amount);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(amount);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(roundedUp);
 }
 
 export function calculatePotOdds(equity: number): string {

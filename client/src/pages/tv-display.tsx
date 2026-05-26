@@ -190,12 +190,13 @@ export default function TVDisplay() {
   };
 
   const formatCurrency = (amount: number): string => {
+    const roundedUp = Math.ceil(amount);
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(roundedUp);
   };
 
   const formatPercentage = (value: number): string => {

@@ -287,12 +287,13 @@ export default function PokerCalculator() {
   };
 
   const formatPotAmount = (amount: number): string => {
+    const roundedUp = Math.ceil(amount);
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(roundedUp);
   };
 
   const calculateEquityMutation = useMutation({
@@ -787,7 +788,7 @@ export default function PokerCalculator() {
 
     toast({
       title: "Hand Finished & Tracked",
-      description: `Guaranteed Fee: $${(p1Fee + p2Fee).toFixed(2)} | Net House Yield: $${houseProfit.toFixed(2)}`,
+      description: `Guaranteed Fee: $${Math.ceil(p1Fee + p2Fee)} | Net House Yield: $${Math.ceil(houseProfit)}`,
     });
 
     // Reset for next hand
