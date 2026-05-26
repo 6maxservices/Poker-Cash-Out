@@ -9,6 +9,7 @@ interface DealerKeypadProps {
   onCardSelect: (card: Card) => void;
   onCardClear: () => void;
   activeSlotName: string;
+  onEnter?: () => void;
 }
 
 export function DealerKeypad({
@@ -16,6 +17,7 @@ export function DealerKeypad({
   onCardSelect,
   onCardClear,
   activeSlotName,
+  onEnter,
 }: DealerKeypadProps) {
   const isCardInUse = (card: Card) => {
     return selectedCards.some((c) => c.rank === card.rank && c.suit === card.suit);
@@ -33,6 +35,15 @@ export function DealerKeypad({
             <span className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-2 py-0.5 rounded text-xs font-semibold animate-pulse">
               Active: {activeSlotName}
             </span>
+          )}
+          {onEnter && (
+            <Button
+              onClick={onEnter}
+              className="h-7 text-xs bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white font-black px-3.5 py-1 rounded-lg flex items-center gap-1 shadow-md border-0"
+            >
+              <Check className="w-3.5 h-3.5 animate-pulse" />
+              ENTER
+            </Button>
           )}
           <Button
             variant="outline"

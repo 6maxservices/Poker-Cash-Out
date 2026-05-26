@@ -385,6 +385,19 @@ export default function PokerCalculator() {
     });
   }, [gameVariant, communityCards, player1Hand, player2Hand, potAmount, burnedCards, canCalculate, toast, calculateEquityMutation]);
 
+  const handleKeypadEnter = useCallback(() => {
+    setIsKeypadOpen(false);
+    if (canCalculate()) {
+      handleCalculateEquity();
+    } else {
+      toast({
+        title: "Keypad Closed",
+        description: "Deal pad closed. Both players need all cards to calculate.",
+        variant: "default",
+      });
+    }
+  }, [canCalculate, handleCalculateEquity, toast]);
+
   // Auto-calculate equity whenever cards change
   useEffect(() => {
     if (canCalculate()) {
@@ -678,6 +691,7 @@ export default function PokerCalculator() {
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
     setPotAmount(1000); // Reset pot to default amount
+    setActiveSlot({ type: 'player1', index: 0 });
 
     // Trigger reset for player components
     setResetCashoutTrigger(true);
@@ -847,6 +861,7 @@ export default function PokerCalculator() {
     setPlayer2Hand({ cards: [] });
     setBurnedCards([]);
     setEquityResult(null);
+    setActiveSlot({ type: 'player1', index: 0 });
   };
 
   return (
@@ -1085,6 +1100,7 @@ export default function PokerCalculator() {
               onCardSelect={handleCardSelectFromKeypad}
               onCardClear={handleClearActiveSlot}
               activeSlotName={getActiveSlotName()}
+              onEnter={handleKeypadEnter}
             />
           </div>
         </div>
