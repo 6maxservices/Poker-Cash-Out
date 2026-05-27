@@ -7,6 +7,7 @@ import { DealerKeypad } from "@/components/dealer-keypad";
 import { EquityDisplay } from "@/components/equity-display";
 import { BurnedCards } from "@/components/burned-cards";
 import { PotAmountModal } from "@/components/pot-amount-modal";
+import { VarianceCalculatorModal } from "@/components/variance-calculator-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X, Camera, Image, Check } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X, Camera, Image, Check, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
@@ -64,6 +65,7 @@ export default function PokerCalculator() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTvOpen, setIsTvOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isVarianceOpen, setIsVarianceOpen] = useState(false);
   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
 
   const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
@@ -983,6 +985,17 @@ export default function PokerCalculator() {
             Session Stats
           </Button>
 
+          {/* House Risk & Variance Simulator Button */}
+          <Button
+            onClick={() => setIsVarianceOpen(true)}
+            size="sm"
+            variant="outline"
+            className="border-red-500/20 text-red-400 hover:bg-red-950/20 h-8 text-[11px] font-bold flex items-center gap-1"
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            Risk & Variance
+          </Button>
+
           {/* TV Stream pairing Code display & pairing trigger */}
           <Button
             onClick={() => setIsTvOpen(true)}
@@ -1620,6 +1633,13 @@ export default function PokerCalculator() {
         onClose={() => setIsPotModalOpen(false)}
         currentAmount={potAmount}
         onAmountChange={setPotAmount}
+      />
+
+      {/* House Variance & Capital Reserve Calculator Modal */}
+      <VarianceCalculatorModal
+        isOpen={isVarianceOpen}
+        onClose={() => setIsVarianceOpen(false)}
+        currentFee={feePercentage}
       />
     </div>
   );
