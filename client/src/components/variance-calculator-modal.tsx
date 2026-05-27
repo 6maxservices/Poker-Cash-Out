@@ -129,7 +129,7 @@ export function VarianceCalculatorModal({
       const p = avgEquity / 100;
       const f = feePercentage / 100;
 
-      const numTrials = 1000;
+      const numTrials = 10000;
       const numSteps = 20; // 20 segments for the chart
       const handsPerStep = N / numSteps;
 
@@ -138,7 +138,7 @@ export function VarianceCalculatorModal({
       const segmentVar = handsPerStep * Math.pow(S, 2) * p * (1 - p);
       const segmentSD = Math.sqrt(segmentVar);
 
-      // Keep track of final bankroll outcomes of 1000 trials
+      // Keep track of final bankroll outcomes of 10,000 trials
       const trialFinalBalances: number[] = [];
       const trialMinPoints: number[] = [];
 
@@ -450,7 +450,7 @@ export function VarianceCalculatorModal({
                   {isSimulating ? (
                     <div className="text-center space-y-2">
                       <RefreshCw className="h-7 w-7 text-yellow-500 animate-spin mx-auto" />
-                      <span className="text-xs text-gray-400">Executing 1,000 independent sessions...</span>
+                      <span className="text-xs text-gray-400">Executing 10,000 independent sessions...</span>
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
