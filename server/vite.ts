@@ -76,10 +76,21 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Serve hashed assets with long-term caching (they have unique hashes in filenames)
+  app.use("/assets", express.static(path.resolve(distPath, "assets"), {
+    maxAge: "1y",
+    immutable: true,
+  }));
+
+  // Serve other static files normally
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
+  // fall through to index.html if the file doesn't exist (SPA routing)
+  // Set no-cache so browsers always fetch the latest index.html after deploys
   app.use("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
