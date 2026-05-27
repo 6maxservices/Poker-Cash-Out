@@ -37,21 +37,21 @@ export function BurnedCards({
   };
 
   return (
-    <div className="bg-black bg-opacity-60 rounded-xl p-3 mb-4 backdrop-blur-sm border border-red-500 border-opacity-30">
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h2 className="text-lg font-bold text-white flex items-center">
-          <Flame className="inline text-red-500 mr-2" size={18} />
-          Burned Cards <span className="text-xs text-gray-400 font-normal ml-2 hidden sm:inline">(Excluded from calculations)</span>
+    <div className="bg-black bg-opacity-60 rounded-xl p-2 md:p-2.5 mb-2 md:mb-3 backdrop-blur-sm border border-red-500 border-opacity-30">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <h2 className="text-sm md:text-base font-bold text-white flex items-center">
+          <Flame className="inline text-red-500 mr-1.5" size={16} />
+          Burned Cards <span className="text-[10px] text-gray-400 font-normal ml-2 hidden sm:inline">(Excluded)</span>
         </h2>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           {onBatchCardSelect && (
             <Button
               onClick={() => setIsBatchModalOpen(true)}
               variant="outline"
               size="sm"
-              className="border-red-500/30 text-red-400 hover:bg-red-950/20 text-[10px] font-semibold py-1 h-7 flex items-center gap-1 rounded-lg"
+              className="border-red-500/30 text-red-400 hover:bg-red-950/20 text-[10px] font-semibold py-0.5 h-6 flex items-center gap-1 rounded-md"
             >
-              <Layers className="h-3 w-3" />
+              <Layers className="h-2.5 w-2.5" />
               Batch Select
             </Button>
           )}
@@ -60,7 +60,7 @@ export function BurnedCards({
               onClick={handleClearAll}
               size="sm"
               variant="ghost"
-              className="text-red-400 hover:text-red-300 hover:bg-red-950/10 text-[10px] h-7 px-2 font-bold"
+              className="text-red-400 hover:text-red-300 hover:bg-red-950/10 text-[9px] h-6 px-1.5 font-bold"
             >
               Clear All
             </Button>
@@ -68,37 +68,36 @@ export function BurnedCards({
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-2 min-h-[60px] items-center">
+      <div className="flex flex-wrap gap-1.5 min-h-[44px] items-center">
         {burnedCards.map((card, index) => (
           <div
             key={`${card.rank}${card.suit}-${index}`}
             className="relative group cursor-pointer"
             onClick={() => onCardRemove(index)}
           >
-            <div className="w-16 h-20 sm:w-12 sm:h-16 rounded-lg flex flex-col items-center justify-center bg-white border-2 border-red-300 hover:border-red-400 hover:bg-red-50 transition-colors relative min-w-[44px] min-h-[44px]">
+            <div className="w-10 h-14 md:w-12 md:h-16 rounded-lg flex flex-col items-center justify-center bg-white border border-red-300 hover:border-red-400 hover:bg-red-50 transition-colors relative min-w-[40px] min-h-[40px]">
               <div className={cn(
-                "text-sm font-bold",
+                "text-[10px] md:text-xs font-bold leading-none",
                 isRedSuit(card.suit) ? "text-red-600" : "text-black"
               )}>
                 {card.rank}
               </div>
               <div className={cn(
-                "text-lg",
+                "text-xs md:text-sm leading-none mt-0.5",
                 isRedSuit(card.suit) ? "text-red-600" : "text-black"
               )}>
                 {card.suit}
               </div>
-              {/* Remove X button - use direct click like community cards */}
             </div>
           </div>
         ))}
         
         <div 
-          className="w-16 h-20 sm:w-12 sm:h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-red-400 hover:border-red-300 hover:bg-red-500 hover:bg-opacity-10 transition-colors min-w-[44px] min-h-[44px]"
+          className="w-10 h-14 md:w-12 md:h-16 rounded-lg flex flex-col items-center justify-center cursor-pointer border border-dashed border-red-400 hover:border-red-300 hover:bg-red-500 hover:bg-opacity-10 transition-colors min-w-[40px] min-h-[40px]"
           onClick={() => setIsModalOpen(true)}
         >
-          <Plus className="text-red-400 w-4 h-4" />
-          <span className="text-xs text-red-400 mt-1">Add</span>
+          <Plus className="text-red-400 w-3.5 h-3.5" />
+          <span className="text-[9px] text-red-400 mt-0.5">Add</span>
         </div>
       </div>
 

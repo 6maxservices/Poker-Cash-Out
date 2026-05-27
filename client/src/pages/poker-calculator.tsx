@@ -39,7 +39,7 @@ interface SessionHand {
 
 export default function PokerCalculator() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('nlh');
-  const [potAmount, setPotAmount] = useState<number>(1000);
+  const [potAmount, setPotAmount] = useState<number>(0);
   const [feePercentage, setFeePercentage] = useState<number>(5);
   const [communityCards, setCommunityCards] = useState<CommunityCards>({
     flop: [],
@@ -707,7 +707,7 @@ export default function PokerCalculator() {
     setPlayer1CashoutStatus(null);
     setPlayer2CashoutStatus(null);
     setHandId(`hand_${Date.now()}`);
-    setPotAmount(1000); // Reset pot to default amount
+    setPotAmount(0); // Reset pot to default amount
     setActiveSlot({ type: 'player1', index: 0 });
 
     // Trigger reset for player components
@@ -1168,13 +1168,13 @@ export default function PokerCalculator() {
 
       {/* Floating Keyboard Trigger at the bottom */}
       {!isKeypadOpen && (
-        <div className="flex-shrink-0 flex justify-center py-2">
+        <div className="flex-shrink-0 flex justify-center py-1">
           <Button
             onClick={() => setIsKeypadOpen(true)}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-6 py-4 rounded-xl shadow-lg flex items-center gap-2 text-xs sm:text-sm animate-pulse"
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-4 py-2 h-9 rounded-lg shadow-md flex items-center gap-1.5 text-xs select-none"
           >
-            <Calculator className="h-4 w-4" />
-            OPEN QUICK DEAL PAD ({getActiveSlotName() || "Select Slot"})
+            <Calculator className="h-3.5 w-3.5" />
+            DEAL PAD ({getActiveSlotName() || "Select Slot"})
           </Button>
         </div>
       )}

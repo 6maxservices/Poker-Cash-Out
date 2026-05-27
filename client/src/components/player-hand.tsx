@@ -99,7 +99,7 @@ export function PlayerHand({
       return (
         <div 
           className={cn(
-            "card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[44px] min-h-[44px]",
+            "card-selected w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[40px] min-h-[40px]",
             isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
           )}
           onClick={() => {
@@ -116,13 +116,13 @@ export function PlayerHand({
           title="Click to select as active slot, double click to clear card"
         >
           <div className={cn(
-            "text-sm font-semibold",
+            "text-xs md:text-sm font-semibold",
             isRedSuit(card.suit) ? "text-red-600" : "text-black"
           )}>
             {card.rank}
           </div>
           <div className={cn(
-            "text-lg",
+            "text-sm md:text-lg leading-none",
             isRedSuit(card.suit) ? "text-red-600" : "text-black"
           )}>
             {card.suit}
@@ -135,7 +135,7 @@ export function PlayerHand({
     return (
       <div 
         className={cn(
-          "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px] transition-all duration-200",
+          "card-slot w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] transition-all duration-200",
           index >= maxCards && "opacity-50",
           isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
         )}
@@ -149,17 +149,17 @@ export function PlayerHand({
         onDoubleClick={index < maxCards ? () => setIsModalOpen(true) : undefined}
         title="Click to select as active slot, double click to open card selector"
       >
-        <Plus className="text-gray-400 w-5 h-5" />
+        <Plus className="text-gray-400 w-4 h-4" />
       </div>
     );
   };
 
   return (
-    <div className="bg-black bg-opacity-60 rounded-xl p-4 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-      <div className="mb-3">
+    <div className="bg-black bg-opacity-60 rounded-xl p-2.5 md:p-3 xl:p-4 backdrop-blur-sm border border-yellow-500 border-opacity-30 flex flex-col justify-between h-full">
+      <div className="mb-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white flex items-center">
-            <User className="inline text-yellow-500 mr-2" size={18} />
+          <h3 className="text-sm md:text-base font-bold text-white flex items-center">
+            <User className="inline text-yellow-500 mr-1.5" size={16} />
             Player {playerNumber}
           </h3>
           {onBatchCardSelect && (
@@ -167,16 +167,16 @@ export function PlayerHand({
               onClick={() => setIsBatchModalOpen(true)}
               variant="outline"
               size="sm"
-              className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-950/20 text-xs font-semibold py-1 h-7 flex items-center gap-1 rounded-lg"
+              className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-950/20 text-[10px] font-semibold py-0.5 h-6 flex items-center gap-1 rounded-md"
             >
-              <Layers className="h-3 w-3" />
+              <Layers className="h-2.5 w-2.5" />
               Batch Select
             </Button>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 mb-4">
+      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 mb-2 md:mb-3">
         {[0, 1, 2, 3, 4].map(index => (
           <div key={index} className={cn(
             index >= maxCards && gameVariant === 'nlh' && "hidden"
@@ -187,40 +187,40 @@ export function PlayerHand({
       </div>
 
       <div className={cn(
-        "rounded-lg p-3 border",
+        "rounded-lg p-2 md:p-2.5 border",
         playerNumber === 1 ? "equity-glow bg-green-600 bg-opacity-20 border-green-500" : "bg-red-600 bg-opacity-20 border-red-500"
       )}>
         <div className="text-center">
           <div className={cn(
-            "text-2xl font-bold mb-1",
+            "text-xl md:text-2xl font-bold mb-0.5",
             playerNumber === 1 ? "text-green-400" : "text-red-400"
           )}>
             {equity.toFixed(1)}%
           </div>
-          <div className="text-sm text-white mb-1">Equity</div>
-          <div className="text-lg font-bold text-yellow-500">
+          <div className="text-[10px] md:text-xs text-white mb-0.5">Equity</div>
+          <div className="text-sm md:text-lg font-black text-yellow-500">
             {formatCurrency(netPayout)}
           </div>
-          <div className="text-xs text-gray-300">
+          <div className="text-[9px] md:text-xs text-gray-300">
             Net Payout ({feePercentage}% fee)
           </div>
           {feeAmount > 0 && (
-            <div className="text-xs text-red-400 mt-1">
+            <div className="text-[9px] md:text-xs text-red-400 mt-0.5">
               Fee: -{formatCurrency(feeAmount)}
             </div>
           )}
         </div>
       </div>
 
-      <div className="mt-3 bg-black bg-opacity-40 rounded-lg p-2">
-        <div className="text-center">
-          <div className="text-xs text-gray-400 mb-1">Pot Odds</div>
-          <div className="text-sm font-semibold text-white">{potOdds}</div>
+      <div className="mt-2 bg-black bg-opacity-40 rounded-lg p-1.5">
+        <div className="text-center flex justify-between items-center px-1.5">
+          <span className="text-[9px] md:text-xs text-gray-400">Pot Odds</span>
+          <span className="text-[10px] md:text-sm font-semibold text-white">{potOdds}</span>
         </div>
       </div>
 
       {/* Cashout Controls */}
-      <div className="mt-3 space-y-2">
+      <div className="mt-2 space-y-1.5">
         {cashoutStatus === null && netPayout > 0 && (
           <Button
             onClick={handleRequestCashout}

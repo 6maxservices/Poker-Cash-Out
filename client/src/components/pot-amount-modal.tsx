@@ -123,17 +123,17 @@ export function PotAmountModal({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 p-4">
+        <div className="space-y-3 p-3">
           {/* Display */}
           <div>
-            <Label className="text-white font-semibold mb-3 block text-lg">
-              Current Amount
+            <Label className="text-white font-semibold mb-2 block text-base text-center">
+              Enter Amount
             </Label>
             <div className="relative">
-              <div className="bg-black rounded-lg p-6 border-2 border-yellow-500">
+              <div className="bg-black rounded-lg p-3.5 border border-yellow-500">
                 <div className="text-center">
-                  <span className="text-yellow-500 font-bold text-xl mr-2">$</span>
-                  <span className="text-white font-bold text-4xl md:text-5xl">
+                  <span className="text-yellow-500 font-bold text-lg mr-2.5">$</span>
+                  <span className="text-white font-bold text-3xl md:text-4xl">
                     {parseFloat(inputValue || "0").toFixed(2)}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export function PotAmountModal({
             </div>
             
             {errors.length > 0 && (
-              <div className="mt-3 space-y-1">
+              <div className="mt-2 space-y-1">
                 {errors.map((error, index) => (
                   <p key={index} className="text-red-400 text-sm text-center">
                     {error}
@@ -165,26 +165,23 @@ export function PotAmountModal({
           />
 
           {/* Big Numpad */}
-          <div className="space-y-4">
-            <Label className="text-white font-semibold block text-lg text-center">
-              Numpad
-            </Label>
-            <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-3 gap-2 md:gap-2.5">
               {numpadButtons.flat().map((button, index) => (
                 <Button
                   key={index}
                   onClick={() => handleNumpadClick(button)}
                   className={`
-                    h-16 w-full text-2xl font-bold rounded-xl transition-all duration-200
+                    h-11 md:h-12 w-full text-xl font-bold rounded-lg transition-all duration-200
                     ${button === 'backspace' 
-                      ? 'bg-red-600 hover:bg-red-700 text-white' 
-                      : 'bg-gray-800 hover:bg-gray-700 text-white border-2 border-gray-600 hover:border-yellow-500'
+                      ? 'bg-red-600 hover:bg-red-700 text-white border border-red-500' 
+                      : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 hover:border-yellow-500'
                     }
                   `}
                   variant="outline"
                 >
                   {button === 'backspace' ? (
-                    <ArrowLeft size={24} />
+                    <ArrowLeft size={20} />
                   ) : (
                     button
                   )}
@@ -195,30 +192,28 @@ export function PotAmountModal({
             {/* Clear button */}
             <Button
               onClick={() => handleNumpadClick('clear')}
-              className="w-full h-14 text-xl font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
+              className="w-full h-10 md:h-11 text-base font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-lg"
             >
-              <Delete className="mr-2 h-5 w-5" />
+              <Delete className="mr-1.5 h-4.5 w-4.5" />
               Clear
             </Button>
           </div>
 
-          
-
           {/* Action buttons */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 h-14 text-lg bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
+              className="flex-1 h-11 md:h-12 text-sm bg-gray-800 text-white border-gray-600 hover:bg-gray-700 rounded-lg"
             >
               Cancel
             </Button>
             <Button
               onClick={handleConfirm}
               disabled={errors.length > 0}
-              className="flex-1 h-14 text-lg bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+              className="flex-1 h-11 md:h-12 text-sm bg-yellow-500 hover:bg-yellow-600 text-black font-bold rounded-lg"
             >
-              <Calculator className="mr-2 h-5 w-5" />
+              <Calculator className="mr-1.5 h-4.5 w-4.5" />
               Confirm
             </Button>
           </div>

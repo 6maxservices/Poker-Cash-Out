@@ -52,10 +52,10 @@ export function CommunityCards({
     if (card) {
       return (
         <div className="text-center">
-          <div className="text-sm text-gray-400 mb-2">{label}</div>
+          <div className="text-[10px] md:text-xs text-gray-400 mb-1">{label}</div>
           <div 
             className={cn(
-              "card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[44px] min-h-[44px]",
+              "card-selected w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[40px] min-h-[40px]",
               isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
             )}
             onClick={() => {
@@ -73,13 +73,13 @@ export function CommunityCards({
             title="Click to select as active slot, double click to clear card"
           >
             <div className={cn(
-              "text-lg sm:text-lg font-semibold",
+              "text-xs md:text-sm font-semibold",
               isRedSuit(card.suit) ? "text-red-600" : "text-black"
             )}>
               {card.rank}
             </div>
             <div className={cn(
-              "text-xl sm:text-xl",
+              "text-sm md:text-lg leading-none",
               isRedSuit(card.suit) ? "text-red-600" : "text-black"
             )}>
               {card.suit}
@@ -92,10 +92,10 @@ export function CommunityCards({
 
     return (
       <div className="text-center">
-        <div className="text-sm text-gray-400 mb-2">{label}</div>
+        <div className="text-[10px] md:text-xs text-gray-400 mb-1">{label}</div>
         <div 
           className={cn(
-            "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px] transition-all duration-200",
+            "card-slot w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] transition-all duration-200",
             isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
           )}
           onClick={() => {
@@ -112,7 +112,7 @@ export function CommunityCards({
           }}
           title="Click to select as active slot, double click to open card selector"
         >
-          <Plus className="text-gray-400 w-6 h-6" />
+          <Plus className="text-gray-400 w-4 h-4" />
         </div>
       </div>
     );
@@ -125,29 +125,29 @@ export function CommunityCards({
   ];
 
   return (
-    <div className="bg-black bg-opacity-60 rounded-xl p-4 mb-6 backdrop-blur-sm border border-yellow-500 border-opacity-30">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-white flex items-center">
-          <span className="text-yellow-500 mr-2">🃏</span>
-          Community Board <span className="text-xs text-gray-400 font-normal ml-2 hidden sm:inline">(Optional for Preflop)</span>
+    <div className="bg-black bg-opacity-60 rounded-xl p-2.5 md:p-3 xl:p-4 mb-2 md:mb-3 backdrop-blur-sm border border-yellow-500 border-opacity-30">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-sm md:text-base font-bold text-white flex items-center">
+          <span className="text-yellow-500 mr-1.5">🃏</span>
+          Community Board <span className="text-[10px] text-gray-400 font-normal ml-2 hidden sm:inline">(Optional for Preflop)</span>
         </h2>
         {onBatchCardSelect && (
           <Button
             onClick={() => setIsBatchModalOpen(true)}
             variant="outline"
             size="sm"
-            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-950/20 text-xs font-semibold py-1 h-7 flex items-center gap-1 rounded-lg"
+            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-950/20 text-[10px] font-semibold py-0.5 h-6 flex items-center gap-1 rounded-md"
           >
-            <Layers className="h-3 w-3" />
-            Batch Select Board
+            <Layers className="h-2.5 w-2.5" />
+            Batch Board
           </Button>
         )}
       </div>
       
-      <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-3">
+      <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-3">
         <div className="text-center">
-          <div className="text-sm text-gray-400 mb-2">FLOP</div>
-          <div className="flex gap-2 justify-center">
+          <div className="text-[10px] md:text-xs text-gray-400 mb-1">FLOP</div>
+          <div className="flex gap-1.5 justify-center">
             {[0, 1, 2].map(index => {
               const isSlotActive = activeSlot?.type === 'flop' && activeSlot?.index === index;
               return (
@@ -155,7 +155,7 @@ export function CommunityCards({
                   {flop && flop[index] ? (
                     <div 
                       className={cn(
-                        "card-selected w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[44px] min-h-[44px]",
+                        "card-selected w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-75 transition-all relative group min-w-[40px] min-h-[40px]",
                         isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
                       )}
                       onClick={() => {
@@ -173,13 +173,13 @@ export function CommunityCards({
                       title="Click to select as active slot, double click to clear card"
                     >
                       <div className={cn(
-                        "text-lg sm:text-lg font-semibold",
+                        "text-xs md:text-sm font-semibold",
                         isRedSuit(flop[index].suit) ? "text-red-600" : "text-black"
                       )}>
                         {flop[index].rank}
                       </div>
                       <div className={cn(
-                        "text-xl sm:text-xl",
+                        "text-sm md:text-lg leading-none",
                         isRedSuit(flop[index].suit) ? "text-red-600" : "text-black"
                       )}>
                         {flop[index].suit}
@@ -189,7 +189,7 @@ export function CommunityCards({
                   ) : (
                     <div 
                       className={cn(
-                        "card-slot w-18 h-28 sm:w-16 sm:h-24 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[44px] min-h-[44px] transition-all duration-200",
+                        "card-slot w-12 h-18 md:w-14 md:h-20 lg:w-16 lg:h-24 xl:w-18 xl:h-28 rounded-lg flex flex-col items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] transition-all duration-200",
                         isSlotActive && "ring-2 ring-yellow-400 border-yellow-400 scale-105 shadow-[0_0_15px_rgba(234,179,8,0.6)]"
                       )}
                       onClick={() => {
@@ -206,7 +206,7 @@ export function CommunityCards({
                       }}
                       title="Click to select as active slot, double click to open card selector"
                     >
-                      <Plus className="text-gray-400 w-6 h-6" />
+                      <Plus className="text-gray-400 w-4 h-4" />
                     </div>
                   )}
                 </div>
@@ -215,7 +215,7 @@ export function CommunityCards({
           </div>
         </div>
 
-        <div className="flex gap-4 sm:gap-3 justify-center">
+        <div className="flex gap-2 md:gap-3 justify-center">
           {renderCard(turn, "TURN", 'turn')}
           {renderCard(river, "RIVER", 'river')}
         </div>
