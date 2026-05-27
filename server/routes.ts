@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { equityCalculationSchema } from "@shared/schema";
+import { equityCalculationSchema, insertHandSchema } from "@shared/schema";
 import { calculateEquity } from "./lib/monte-carlo";
 import { tvBroadcastManager } from "./lib/tv-broadcast";
 
@@ -61,6 +61,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error retrieving recent calculations:", error);
       res.status(500).json({ message: "Failed to retrieve recent calculations" });
+    }
+  });
+
+  // Save finalized hand to history
+  app.post("/api/hands", async (req, res) => {
+    try {
+      const handData = insertHandSchema.parse(req.body);
+      const savedHand = await storage.saveHand(handData);
+      res.json(savedHand);
+    } catch (error) {
+      console.error("Error saving finalized hand:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to save hand history" 
+      });
+    }
+  });
+
+  // Get finalized hands history
+  app.get("/api/hands", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const hands = await storage.getHands(limit);
+      res.json(hands);
+    } catch (error) {
+      console.error("Error retrieving hand history:", error);
+      res.status(500).json({ message: "Failed to retrieve hand history" });
     }
   });
 

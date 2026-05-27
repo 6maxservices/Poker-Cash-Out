@@ -97,6 +97,7 @@ export default function PokerCalculator() {
 
   // Load session history on mount
   useEffect(() => {
+    // 1. Load from localStorage first for instant offline PWA access
     const saved = localStorage.getItem('poker_session_history');
     if (saved) {
       try {
@@ -105,6 +106,38 @@ export default function PokerCalculator() {
         console.error('Failed to parse session history:', e);
       }
     }
+
+    // 2. Fetch synchronized hand history from the PostgreSQL database
+    fetch('/api/hands?limit=100')
+      .then(res => {
+        if (!res.ok) throw new Error("Sync failed");
+        return res.json();
+      })
+      .then(data => {
+        // Map database hands schema to client SessionHand layout
+        const mappedHands: SessionHand[] = data.map((h: any) => ({
+          handId: h.handId,
+          gameVariant: h.gameVariant as GameVariant,
+          potAmount: h.potAmount,
+          feePercentage: h.feePercentage,
+          player1Cashed: h.player1Cashed,
+          player2Cashed: h.player2Cashed,
+          player1Payout: h.player1Payout,
+          player2Payout: h.player2Payout,
+          player1Fee: h.player1Fee,
+          player2Fee: h.player2Fee,
+          winner: h.winner as any,
+          houseProfit: h.houseProfit,
+          photo: h.photo || undefined,
+          timestamp: h.createdAt
+        }));
+        
+        setSessionHistory(mappedHands);
+        localStorage.setItem('poker_session_history', JSON.stringify(mappedHands));
+      })
+      .catch(() => {
+        console.log('Running in offline mode; using local cached hand history.');
+      });
   }, []);
 
   const saveSessionHistory = (newHistory: SessionHand[]) => {
@@ -821,6 +854,25 @@ export default function PokerCalculator() {
 
     const updatedHistory = [newHand, ...sessionHistory];
     saveSessionHistory(updatedHistory);
+
+    // Save finalized hand to PostgreSQL database on the server
+    apiRequest('POST', '/api/hands', {
+      handId: newHand.handId,
+      gameVariant: newHand.gameVariant,
+      potAmount: newHand.potAmount,
+      feePercentage: newHand.feePercentage,
+      player1Cashed: newHand.player1Cashed,
+      player2Cashed: newHand.player2Cashed,
+      player1Payout: newHand.player1Payout,
+      player2Payout: newHand.player2Payout,
+      player1Fee: newHand.player1Fee,
+      player2Fee: newHand.player2Fee,
+      winner: newHand.winner,
+      houseProfit: newHand.houseProfit,
+      photo: newHand.photo || null
+    }).catch(err => {
+      console.error("Failed to sync hand with server database (saved locally):", err);
+    });
 
     // Save hand to database/storage (finalized calculation mutate to store photo in database)
     if (photoBase64 && canCalculate()) {

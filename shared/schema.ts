@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pgTable, serial, text, real, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, real, integer, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const suits = ['♠', '♥', '♦', '♣'] as const;
@@ -81,3 +81,29 @@ export const insertCalculationSchema = createInsertSchema(calculations).omit({
 
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type Calculation = typeof calculations.$inferSelect;
+
+export const hands = pgTable('hands', {
+  id: serial('id').primaryKey(),
+  handId: text('hand_id').notNull(),
+  gameVariant: text('game_variant').notNull(),
+  potAmount: real('pot_amount').notNull(),
+  feePercentage: real('fee_percentage').notNull(),
+  player1Cashed: boolean('player1_cashed').notNull(),
+  player2Cashed: boolean('player2_cashed').notNull(),
+  player1Payout: real('player1_payout').notNull(),
+  player2Payout: real('player2_payout').notNull(),
+  player1Fee: real('player1_fee').notNull(),
+  player2Fee: real('player2_fee').notNull(),
+  winner: text('winner').notNull(), // '1' | '2' | 'split' | 'unknown'
+  houseProfit: real('house_profit').notNull(),
+  photo: text('photo'), // Base64 hand photo
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const insertHandSchema = createInsertSchema(hands).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export type InsertHand = z.infer<typeof insertHandSchema>;
+export type HandRecord = typeof hands.$inferSelect;
