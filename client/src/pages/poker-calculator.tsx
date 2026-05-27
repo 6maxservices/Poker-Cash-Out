@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X, Camera, Image, Check, ShieldAlert } from "lucide-react";
+import { Spade, Heart, DollarSign, Calculator, Monitor, ExternalLink, RotateCcw, TrendingUp, Trash2, Coins, Award, History, Landmark, Settings, X, Camera, Image, Check, ShieldAlert, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { tvApiClient } from "@/lib/tv-api";
 import { setAppTheme } from "@/lib/theme-utils";
@@ -67,6 +67,31 @@ export default function PokerCalculator() {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isVarianceOpen, setIsVarianceOpen] = useState(false);
   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
+  
+  // PWA installation states & helpers
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log("beforeinstallprompt event captured.");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User installation choice: ${outcome}`);
+    setDeferredPrompt(null);
+  };
 
   const [activeSlot, setActiveSlot] = useState<SlotTarget | null>({ type: 'player1', index: 0 });
   const [sessionHistory, setSessionHistory] = useState<SessionHand[]>([]);
@@ -984,6 +1009,18 @@ export default function PokerCalculator() {
             <Landmark className="h-3.5 w-3.5" />
             Session Stats
           </Button>
+
+          {/* PWA Install Button */}
+          {deferredPrompt && (
+            <Button
+              onClick={handleInstallClick}
+              size="sm"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black border border-yellow-400 h-8 text-[11px] font-black flex items-center gap-1 shadow-lg shadow-yellow-500/20"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Install App
+            </Button>
+          )}
 
           {/* House Risk & Variance Simulator Button */}
           <Button

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  {/* Shield Base Outline */}
+  <!-- Shield Base Outline -->
   <path 
     d="M50 5L15 15V45C15 70 35 90 50 95C65 90 85 70 85 45V15L50 5Z" 
     fill="url(#shieldGrad)" 
@@ -8,12 +8,12 @@
     strokeLinecap="round" 
     strokeLinejoin="round" 
   />
-  {/* Spade Icon in the middle */}
+  <!-- Spade Icon in the middle -->
   <path 
     d="M50 22C46.5 22 39 31.5 39 41.5C39 49 44.5 53 48.5 53C47.8 55.5 45.5 62 41 72H59C54.5 62 52.2 55.5 51.5 53C55.5 53 61 49 61 41.5C61 31.5 53.5 22 50 22Z" 
     fill="#FFFFFF" 
   />
-  {/* Keyhole inside Spade representing Lock */}
+  <!-- Keyhole inside Spade representing Lock -->
   <circle cx="50" cy="40" r="4.5" fill="#EAB308" />
   <path d="M47.5 40H52.5L53.5 50H46.5L47.5 40Z" fill="#EAB308" />
   
