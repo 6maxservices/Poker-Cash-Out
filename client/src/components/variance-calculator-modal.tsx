@@ -19,6 +19,7 @@ const STAKE_PRESETS: StakePreset[] = [
   { name: "nlh2", label: "$1/$2 NLH (Pot: $150)", potSize: 150 },
   { name: "nlh5", label: "$2/$5 NLH (Pot: $500)", potSize: 500 },
   { name: "nlh10", label: "$5/$10 NLH (Pot: $1,500)", potSize: 1500 },
+  { name: "plo4_2", label: "$1/$2 PLO4 (Pot: $400)", potSize: 400 },
   { name: "plo4", label: "$2/$5 PLO4 (Pot: $800)", potSize: 800 },
   { name: "plo5", label: "$5/$10 PLO5 (Pot: $2,500)", potSize: 2500 },
   { name: "custom", label: "Custom Pot Size", potSize: 1000 }
