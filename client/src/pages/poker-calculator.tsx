@@ -793,13 +793,15 @@ export default function PokerCalculator() {
     if (equityResult) {
       if (p1Cashed) {
         const p1Money = equityResult.player1MoneyEquity || 0;
-        p1Fee = p1Money * (feePercentage / 100);
-        p1Payout = p1Money - p1Fee;
+        const p1MoneyRounded = Math.round(p1Money);
+        p1Fee = Math.round(p1Money * (feePercentage / 100));
+        p1Payout = p1MoneyRounded - p1Fee;
       }
       if (p2Cashed) {
         const p2Money = equityResult.player2MoneyEquity || 0;
-        p2Fee = p2Money * (feePercentage / 100);
-        p2Payout = p2Money - p2Fee;
+        const p2MoneyRounded = Math.round(p2Money);
+        p2Fee = Math.round(p2Money * (feePercentage / 100));
+        p2Payout = p2MoneyRounded - p2Fee;
       }
 
       if (equityResult.player1Equity > 99) {

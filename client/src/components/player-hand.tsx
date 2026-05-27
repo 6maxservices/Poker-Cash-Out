@@ -59,9 +59,10 @@ export function PlayerHand({
   const maxCards = gameVariant === 'nlh' ? 2 : gameVariant === 'plo4' ? 4 : 5;
   const potOdds = calculatePotOdds(equity);
   
-  // Calculate net payout after fees
-  const feeAmount = moneyEquity * (feePercentage / 100);
-  const netPayout = moneyEquity - feeAmount;
+  // Calculate net payout after fees with mathematically balanced rounding (no double-ceil drift)
+  const totalRoundedEquity = Math.round(moneyEquity);
+  const feeAmount = Math.round(moneyEquity * (feePercentage / 100));
+  const netPayout = totalRoundedEquity - feeAmount;
   
   const handleCardSelect = (card: Card) => {
     // Determine active slot index, or fallback to append
